@@ -45,11 +45,17 @@ const Records = () => {
     }
 
     try {
-      // Show encryption notice
+      // Show encryption notice first
       setShowEncryptionNotice(true);
       
-      // Small delay to show the notice
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait longer to ensure user sees the notice
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Hide notice before showing signature prompt
+      setShowEncryptionNotice(false);
+      
+      // Small delay between dialogs
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Request signature to access encrypted records
       const message = `Accessing encrypted medical records at ${new Date().toLocaleString()}`;
@@ -67,8 +73,9 @@ const Records = () => {
 
       setAccessGranted(true);
       fetchRecords();
-    } finally {
+    } catch (error) {
       setShowEncryptionNotice(false);
+      console.error("Access signature error:", error);
     }
   };
 
