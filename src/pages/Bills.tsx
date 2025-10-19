@@ -42,13 +42,39 @@ const Bills = () => {
   const [filteredBills, setFilteredBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [accessGranted, setAccessGranted] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { requestSignature, isWaitingForSignature } = useSignature();
 
   useEffect(() => {
-    fetchBills();
+    requestAccessSignature();
   }, []);
+
+  const requestAccessSignature = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+
+    // Request signature to access encrypted bills
+    const message = `Accessing encrypted medical bills at ${new Date().toLocaleString()}`;
+    const signature = await requestSignature(message);
+    
+    if (!signature) {
+      toast({
+        title: "Access Denied",
+        description: "You must sign to access your encrypted medical bills",
+        variant: "destructive",
+      });
+      navigate("/dashboard");
+      return;
+    }
+
+    setAccessGranted(true);
+    fetchBills();
+  };
 
   useEffect(() => {
     if (selectedCategory === "all") {
@@ -160,7 +186,7 @@ const Bills = () => {
     { key: "consultation", label: "Consultation", icon: Stethoscope },
   ];
 
-  if (loading) {
+  if (!accessGranted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-mesh">
         <div className="relative">
@@ -302,8 +328,11 @@ const Bills = () => {
 
       <SignaturePrompt
         open={isWaitingForSignature}
-        title="Encrypting Payment"
-        description="This payment transaction is being encrypted on the blockchain. Please sign in your wallet to confirm your identity and secure your payment data."
+        title={accessGranted ? "Encrypting Payment" : "Accessing Encrypted Bills"}
+        description={accessGranted 
+          ? "This payment transaction is being encrypted on the blockchain. Please sign in your wallet to confirm your identity and secure your payment data."
+          : "Your medical bills are encrypted on the blockchain. Please sign in your wallet to confirm your identity and access your billing data."
+        }
       />
 
       <Footer />

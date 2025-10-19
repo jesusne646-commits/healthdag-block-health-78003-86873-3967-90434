@@ -26,13 +26,39 @@ const Records = () => {
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [aiSummary, setAiSummary] = useState("");
+  const [accessGranted, setAccessGranted] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { requestSignature, isWaitingForSignature } = useSignature();
 
   useEffect(() => {
-    fetchRecords();
+    requestAccessSignature();
   }, []);
+
+  const requestAccessSignature = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+
+    // Request signature to access encrypted records
+    const message = `Accessing encrypted medical records at ${new Date().toLocaleString()}`;
+    const signature = await requestSignature(message);
+    
+    if (!signature) {
+      toast({
+        title: "Access Denied",
+        description: "You must sign to access your encrypted medical records",
+        variant: "destructive",
+      });
+      navigate("/dashboard");
+      return;
+    }
+
+    setAccessGranted(true);
+    fetchRecords();
+  };
 
   const fetchRecords = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -69,14 +95,6 @@ const Records = () => {
       return;
     }
 
-    // Request signature for accessing encrypted records
-    const message = `Accessing encrypted medical records for AI analysis`;
-    const signature = await requestSignature(message);
-    
-    if (!signature) {
-      return;
-    }
-
     setLoadingSummary(true);
     try {
       const { data, error } = await supabase.functions.invoke('medical-summary');
@@ -103,7 +121,7 @@ const Records = () => {
     }
   };
 
-  if (loading) {
+  if (!accessGranted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -208,7 +226,7 @@ const Records = () => {
       <SignaturePrompt
         open={isWaitingForSignature}
         title="Accessing Encrypted Records"
-        description="Your medical records are encrypted on the blockchain. Please sign in your wallet to confirm your identity and decrypt your health data."
+        description="Your medical records are encrypted on the blockchain. Please sign in your wallet to confirm your identity and access your health data."
       />
 
       <Footer />
