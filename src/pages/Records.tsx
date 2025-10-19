@@ -44,30 +44,32 @@ const Records = () => {
       return;
     }
 
-    // Show encryption notice
-    setShowEncryptionNotice(true);
-    
-    // Small delay to show the notice
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // Show encryption notice
+      setShowEncryptionNotice(true);
+      
+      // Small delay to show the notice
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Request signature to access encrypted records
-    const message = `Accessing encrypted medical records at ${new Date().toLocaleString()}`;
-    const signature = await requestSignature(message);
-    
-    setShowEncryptionNotice(false);
-    
-    if (!signature) {
-      toast({
-        title: "Access Denied",
-        description: "You must sign to access your encrypted medical records",
-        variant: "destructive",
-      });
-      navigate("/dashboard");
-      return;
+      // Request signature to access encrypted records
+      const message = `Accessing encrypted medical records at ${new Date().toLocaleString()}`;
+      const signature = await requestSignature(message);
+      
+      if (!signature) {
+        toast({
+          title: "Access Denied",
+          description: "You must sign to access your encrypted medical records",
+          variant: "destructive",
+        });
+        navigate("/dashboard");
+        return;
+      }
+
+      setAccessGranted(true);
+      fetchRecords();
+    } finally {
+      setShowEncryptionNotice(false);
     }
-
-    setAccessGranted(true);
-    fetchRecords();
   };
 
   const fetchRecords = async () => {
