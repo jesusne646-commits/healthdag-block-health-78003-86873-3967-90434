@@ -42,6 +42,13 @@ const Records = () => {
       return;
     }
 
+    // Show notification about encrypted feature
+    toast({
+      title: "🔒 Encrypted Medical Records",
+      description: "This feature is fully encrypted on the blockchain. Please sign with your wallet to securely access your medical records.",
+      duration: 6000,
+    });
+
     // Request signature to access encrypted records
     const message = `Accessing encrypted medical records at ${new Date().toLocaleString()}`;
     const signature = await requestSignature(message);

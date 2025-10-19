@@ -58,6 +58,13 @@ const Bills = () => {
       return;
     }
 
+    // Show notification about encrypted feature
+    toast({
+      title: "🔒 Encrypted Bill Payment",
+      description: "This feature is fully encrypted on the blockchain. Please sign with your wallet to securely access your medical bills.",
+      duration: 6000,
+    });
+
     // Request signature to access encrypted bills
     const message = `Accessing encrypted medical bills at ${new Date().toLocaleString()}`;
     const signature = await requestSignature(message);
