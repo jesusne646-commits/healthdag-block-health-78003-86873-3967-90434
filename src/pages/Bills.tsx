@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import Footer from "@/components/Footer";
 import { SignaturePrompt } from "@/components/SignaturePrompt";
+import { EncryptionNotice } from "@/components/EncryptionNotice";
 import { useSignature } from "@/hooks/useSignature";
 
 type Bill = {
@@ -43,6 +44,7 @@ const Bills = () => {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [accessGranted, setAccessGranted] = useState(false);
+  const [showEncryptionNotice, setShowEncryptionNotice] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { requestSignature, isWaitingForSignature } = useSignature();
@@ -58,16 +60,17 @@ const Bills = () => {
       return;
     }
 
-    // Show notification about encrypted feature
-    toast({
-      title: "🔒 Encrypted Bill Payment",
-      description: "This feature is fully encrypted on the blockchain. Please sign with your wallet to securely access your medical bills.",
-      duration: 6000,
-    });
+    // Show encryption notice
+    setShowEncryptionNotice(true);
+    
+    // Small delay to show the notice
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Request signature to access encrypted bills
     const message = `Accessing encrypted medical bills at ${new Date().toLocaleString()}`;
     const signature = await requestSignature(message);
+    
+    setShowEncryptionNotice(false);
     
     if (!signature) {
       toast({
@@ -332,6 +335,12 @@ const Bills = () => {
           </div>
         )}
       </div>
+
+      <EncryptionNotice
+        open={showEncryptionNotice}
+        title="🔒 Encrypted Bill Payment"
+        description="This feature is fully encrypted on the blockchain. Please sign with your wallet to securely access your medical bills."
+      />
 
       <SignaturePrompt
         open={isWaitingForSignature}

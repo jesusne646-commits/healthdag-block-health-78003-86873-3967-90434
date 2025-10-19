@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import Footer from "@/components/Footer";
 import { SignaturePrompt } from "@/components/SignaturePrompt";
+import { EncryptionNotice } from "@/components/EncryptionNotice";
 import { useSignature } from "@/hooks/useSignature";
 
 type Record = {
@@ -27,6 +28,7 @@ const Records = () => {
   const [showSummary, setShowSummary] = useState(false);
   const [aiSummary, setAiSummary] = useState("");
   const [accessGranted, setAccessGranted] = useState(false);
+  const [showEncryptionNotice, setShowEncryptionNotice] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { requestSignature, isWaitingForSignature } = useSignature();
@@ -42,16 +44,17 @@ const Records = () => {
       return;
     }
 
-    // Show notification about encrypted feature
-    toast({
-      title: "🔒 Encrypted Medical Records",
-      description: "This feature is fully encrypted on the blockchain. Please sign with your wallet to securely access your medical records.",
-      duration: 6000,
-    });
+    // Show encryption notice
+    setShowEncryptionNotice(true);
+    
+    // Small delay to show the notice
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Request signature to access encrypted records
     const message = `Accessing encrypted medical records at ${new Date().toLocaleString()}`;
     const signature = await requestSignature(message);
+    
+    setShowEncryptionNotice(false);
     
     if (!signature) {
       toast({
@@ -229,6 +232,12 @@ const Records = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <EncryptionNotice
+        open={showEncryptionNotice}
+        title="🔒 Encrypted Medical Records"
+        description="This feature is fully encrypted on the blockchain. Please sign with your wallet to securely access your medical records."
+      />
 
       <SignaturePrompt
         open={isWaitingForSignature}
