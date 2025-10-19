@@ -1,0 +1,277 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Core Colors - UI 2.0 */
+    --background: 220 25% 98%;
+    --foreground: 230 20% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 230 20% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 20% 12%;
+
+    /* Primary - Vibrant Blue */
+    --primary: 215 100% 58%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 215 100% 70%;
+    --primary-dark: 215 100% 45%;
+
+    /* Secondary - Soft Purple */
+    --secondary: 265 60% 65%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-light: 265 60% 75%;
+
+    /* Accent - Vibrant Cyan */
+    --accent: 185 95% 58%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 185 95% 70%;
+
+    /* Success - Fresh Green */
+    --success: 145 65% 55%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning - Warm Orange */
+    --warning: 35 95% 60%;
+    --warning-foreground: 0 0% 100%;
+
+    --destructive: 0 85% 62%;
+    --destructive-foreground: 0 0% 100%;
+
+    --muted: 220 20% 96%;
+    --muted-foreground: 230 15% 50%;
+
+    --border: 220 20% 92%;
+    --input: 220 20% 92%;
+    --ring: 215 100% 58%;
+
+    /* Spacing & Radius */
+    --radius: 1rem;
+    --radius-lg: 1.5rem;
+    --radius-xl: 2rem;
+    
+    /* Gradients - UI 2.0 */
+    --gradient-primary: linear-gradient(135deg, hsl(215 100% 58%), hsl(185 95% 58%));
+    --gradient-secondary: linear-gradient(135deg, hsl(265 60% 65%), hsl(215 100% 70%));
+    --gradient-hero: linear-gradient(180deg, hsl(220 25% 98%), hsl(215 100% 98%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.9), hsl(215 100% 99% / 0.7));
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.1), hsl(0 0% 100% / 0.05));
+    --gradient-success: linear-gradient(135deg, hsl(145 65% 55%), hsl(165 70% 50%));
+    --gradient-mesh: radial-gradient(at 40% 20%, hsl(215 100% 95%) 0px, transparent 50%),
+                     radial-gradient(at 80% 0%, hsl(185 95% 95%) 0px, transparent 50%),
+                     radial-gradient(at 0% 50%, hsl(265 60% 95%) 0px, transparent 50%);
+
+    /* Shadows & Glows - UI 2.0 */
+    --shadow-sm: 0 2px 8px hsl(215 100% 58% / 0.08);
+    --shadow-md: 0 4px 16px hsl(215 100% 58% / 0.12);
+    --shadow-lg: 0 8px 32px hsl(215 100% 58% / 0.16);
+    --shadow-xl: 0 12px 48px hsl(215 100% 58% / 0.2);
+    --shadow-card: 0 8px 32px -8px hsl(215 100% 58% / 0.15);
+    --shadow-button: 0 4px 16px hsl(215 100% 58% / 0.3);
+    --shadow-button-hover: 0 8px 24px hsl(215 100% 58% / 0.4);
+    
+    --glow-primary: 0 0 48px hsl(215 100% 58% / 0.3);
+    --glow-accent: 0 0 40px hsl(185 95% 58% / 0.25);
+    --glow-success: 0 0 32px hsl(145 65% 55% / 0.25);
+    
+    /* Backdrop Blur */
+    --blur-glass: blur(16px);
+    --blur-heavy: blur(24px);
+
+    /* Transitions - UI 2.0 */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-fast: all 0.15s ease-out;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 230 20% 20%;
+    --sidebar-primary: 215 100% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 20% 96%;
+    --sidebar-accent-foreground: 230 20% 20%;
+    --sidebar-border: 220 20% 92%;
+    --sidebar-ring: 215 100% 58%;
+  }
+
+  .dark {
+    /* Core Colors - Dark Mode UI 2.0 */
+    --background: 230 25% 8%;
+    --foreground: 220 20% 96%;
+
+    --card: 230 20% 11%;
+    --card-foreground: 220 20% 96%;
+
+    --popover: 230 20% 11%;
+    --popover-foreground: 220 20% 96%;
+
+    --primary: 215 100% 62%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 215 100% 72%;
+    --primary-dark: 215 100% 48%;
+
+    --secondary: 265 60% 68%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-light: 265 60% 78%;
+
+    --accent: 185 95% 62%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 185 95% 72%;
+
+    --success: 145 65% 58%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 35 95% 62%;
+    --warning-foreground: 0 0% 100%;
+
+    --destructive: 0 85% 65%;
+    --destructive-foreground: 0 0% 100%;
+
+    --muted: 230 20% 16%;
+    --muted-foreground: 220 15% 65%;
+
+    --border: 230 20% 18%;
+    --input: 230 20% 18%;
+    --ring: 215 100% 62%;
+
+    /* Dark Mode Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(215 100% 62%), hsl(185 95% 62%));
+    --gradient-secondary: linear-gradient(135deg, hsl(265 60% 68%), hsl(215 100% 72%));
+    --gradient-hero: linear-gradient(180deg, hsl(230 25% 8%), hsl(230 25% 12%));
+    --gradient-card: linear-gradient(145deg, hsl(230 20% 13% / 0.9), hsl(215 100% 15% / 0.5));
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.05), hsl(0 0% 100% / 0.02));
+    --gradient-success: linear-gradient(135deg, hsl(145 65% 58%), hsl(165 70% 52%));
+    --gradient-mesh: radial-gradient(at 40% 20%, hsl(215 100% 20%) 0px, transparent 50%),
+                     radial-gradient(at 80% 0%, hsl(185 95% 20%) 0px, transparent 50%),
+                     radial-gradient(at 0% 50%, hsl(265 60% 20%) 0px, transparent 50%);
+
+    /* Dark Mode Shadows & Glows */
+    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.5);
+    --shadow-xl: 0 12px 48px hsl(0 0% 0% / 0.6);
+    --shadow-card: 0 8px 32px -8px hsl(0 0% 0% / 0.4);
+    --shadow-button: 0 4px 16px hsl(215 100% 62% / 0.4);
+    --shadow-button-hover: 0 8px 24px hsl(215 100% 62% / 0.5);
+    
+    --glow-primary: 0 0 48px hsl(215 100% 62% / 0.4);
+    --glow-accent: 0 0 40px hsl(185 95% 62% / 0.3);
+    --glow-success: 0 0 32px hsl(145 65% 58% / 0.3);
+
+    /* Sidebar Dark */
+    --sidebar-background: 230 25% 9%;
+    --sidebar-foreground: 220 20% 90%;
+    --sidebar-primary: 215 100% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 230 20% 16%;
+    --sidebar-accent-foreground: 220 20% 90%;
+    --sidebar-border: 230 20% 18%;
+    --sidebar-ring: 215 100% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Smooth scrolling */
+  html {
+    @apply scroll-smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/30;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/30 rounded-full hover:bg-primary/50 transition-colors;
+  }
+}
+
+@layer utilities {
+  /* Glass effect */
+  .glass {
+    background: var(--gradient-glass);
+    backdrop-filter: var(--blur-glass);
+    @apply border border-white/20;
+  }
+
+  .glass-heavy {
+    background: var(--gradient-glass);
+    backdrop-filter: var(--blur-heavy);
+    @apply border border-white/30;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent;
+  }
+
+  .gradient-text-primary {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-xl;
+  }
+
+  .card-hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl;
+  }
+
+  /* Glow effects */
+  .glow-primary {
+    box-shadow: var(--glow-primary);
+  }
+
+  .glow-accent {
+    box-shadow: var(--glow-accent);
+  }
+
+  /* Animations */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .animate-shimmer {
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px hsl(var(--primary) / 0.2); }
+    50% { box-shadow: 0 0 40px hsl(var(--primary) / 0.4); }
+  }
+}
