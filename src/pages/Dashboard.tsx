@@ -116,7 +116,7 @@ const Dashboard = () => {
       iconColor: "text-success",
     },
     {
-      title: "Health Insurance",
+      title: "BlockDAG Health Insurance",
       description: "BlockDAG coverage & claims",
       icon: Shield,
       path: "/insurance",

@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Send, ArrowDown, Copy, ExternalLink, Wallet as WalletIcon, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Send, Copy, ExternalLink, Wallet as WalletIcon, Link as LinkIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMetaMask } from "@/hooks/useMetaMask";
 import healthdagLogo from "@/assets/healthdag-logo.png";
@@ -34,13 +33,9 @@ const Wallet = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [sendAmount, setSendAmount] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
-  const [receiveAmount, setReceiveAmount] = useState("");
   const [loading, setLoading] = useState(true);
   const [sendLoading, setSendLoading] = useState(false);
-  const [receiveLoading, setReceiveLoading] = useState(false);
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
-  const [receiveDialogOpen, setReceiveDialogOpen] = useState(false);
-  const [walletMode, setWalletMode] = useState<"simulated" | "live">("simulated");
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -97,7 +92,6 @@ const Wallet = () => {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile) return;
 
     const amount = parseFloat(sendAmount);
     if (isNaN(amount) || amount <= 0) {
@@ -109,144 +103,35 @@ const Wallet = () => {
       return;
     }
 
-    if (walletMode === "simulated") {
-      if (amount > profile.bdag_balance) {
-        toast({
-          title: "Insufficient Balance",
-          description: "You don't have enough BDAG tokens",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setSendLoading(true);
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Update sender balance
-      const { error: balanceError } = await (supabase as any)
-        .from("profiles")
-        .update({
-          bdag_balance: profile.bdag_balance - amount,
-        })
-        .eq("id", user.id);
-
-      // Create transaction record
-      const { error: txError } = await (supabase as any).from("wallet_transactions").insert({
-        user_id: user.id,
-        transaction_type: "send",
-        amount: amount,
-        recipient_address: recipientAddress,
-        transaction_hash: `TX_${Math.random().toString(36).substring(2, 15)}`,
-        status: "completed",
-      });
-
-      if (balanceError || txError) {
-        toast({
-          title: "Error",
-          description: "Failed to send tokens",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: `Sent ${amount} BDAG to ${recipientAddress.substring(0, 10)}...`,
-        });
-        setSendDialogOpen(false);
-        setSendAmount("");
-        setRecipientAddress("");
-        fetchWalletData();
-      }
-
-      setSendLoading(false);
-    } else {
-      // Live blockchain transaction via MetaMask
-      if (!isConnected) {
-        toast({
-          title: "Wallet Not Connected",
-          description: "Please connect MetaMask first",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!isOnBlockDAGNetwork) {
-        toast({
-          title: "Wrong Network",
-          description: "Please switch to BlockDAG Testnet",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setSendLoading(true);
-      const txHash = await sendTransaction(recipientAddress, sendAmount);
-      
-      if (txHash) {
-        setSendDialogOpen(false);
-        setSendAmount("");
-        setRecipientAddress("");
-        refreshBalance();
-      }
-      
-      setSendLoading(false);
-    }
-  };
-
-  const handleReceive = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profile) return;
-
-    const amount = parseFloat(receiveAmount);
-    if (isNaN(amount) || amount <= 0) {
+    if (!isConnected) {
       toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid amount",
+        title: "Wallet Not Connected",
+        description: "Please connect MetaMask first",
         variant: "destructive",
       });
       return;
     }
 
-    setReceiveLoading(true);
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Update balance
-    const { error: balanceError } = await (supabase as any)
-      .from("profiles")
-      .update({
-        bdag_balance: profile.bdag_balance + amount,
-      })
-      .eq("id", user.id);
-
-    // Create transaction record
-    const { error: txError } = await (supabase as any).from("wallet_transactions").insert({
-      user_id: user.id,
-      transaction_type: "receive",
-      amount: amount,
-      transaction_hash: `TX_${Math.random().toString(36).substring(2, 15)}`,
-      status: "completed",
-    });
-
-    if (balanceError || txError) {
+    if (!isOnBlockDAGNetwork) {
       toast({
-        title: "Error",
-        description: "Failed to receive tokens",
+        title: "Wrong Network",
+        description: "Please switch to BlockDAG Testnet",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: `Received ${amount} BDAG`,
-      });
-      setReceiveDialogOpen(false);
-      setReceiveAmount("");
-      fetchWalletData();
+      return;
     }
 
-    setReceiveLoading(false);
+    setSendLoading(true);
+    const txHash = await sendTransaction(recipientAddress, sendAmount);
+    
+    if (txHash) {
+      setSendDialogOpen(false);
+      setSendAmount("");
+      setRecipientAddress("");
+      refreshBalance();
+    }
+    
+    setSendLoading(false);
   };
 
   const copyToClipboard = (text: string) => {
@@ -292,16 +177,10 @@ const Wallet = () => {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <WalletIcon className="w-5 h-5" />
-                  Blockchain Wallet
+                  BlockDAG Testnet Wallet
                 </CardTitle>
-                <CardDescription>Connect MetaMask for real blockchain transactions</CardDescription>
+                <CardDescription>Connect MetaMask to BlockDAG Testnet for real transactions</CardDescription>
               </div>
-              <Tabs value={walletMode} onValueChange={(v) => setWalletMode(v as "simulated" | "live")}>
-                <TabsList>
-                  <TabsTrigger value="simulated">Simulated</TabsTrigger>
-                  <TabsTrigger value="live" disabled={!isConnected}>Live</TabsTrigger>
-                </TabsList>
-              </Tabs>
             </div>
           </CardHeader>
           <CardContent>
@@ -375,28 +254,19 @@ const Wallet = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-2xl">
-                  {walletMode === "simulated" ? "Simulated Balance" : "Live Balance"}
-                </CardTitle>
-                <CardDescription>
-                  {walletMode === "simulated" 
-                    ? "Database balance for testing" 
-                    : "Real on-chain balance"}
-                </CardDescription>
+                <CardTitle className="text-2xl">On-Chain Balance</CardTitle>
+                <CardDescription>Real BlockDAG Testnet balance</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              {walletMode === "simulated" 
-                ? `${profile?.bdag_balance.toFixed(2)} BDAG`
-                : `${balance || "0.0000"} BDAG`
-              }
+              {balance || "0.0000"} BDAG
             </div>
             <div className="flex gap-3">
               <Dialog open={sendDialogOpen} onOpenChange={setSendDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="flex-1" disabled={walletMode === "live" && !isOnBlockDAGNetwork}>
+                  <Button className="flex-1" disabled={!isOnBlockDAGNetwork}>
                     <Send className="w-4 h-4 mr-2" />
                     Send
                   </Button>
@@ -405,9 +275,7 @@ const Wallet = () => {
                   <DialogHeader>
                     <DialogTitle>Send BDAG Tokens</DialogTitle>
                     <DialogDescription>
-                      {walletMode === "simulated" 
-                        ? "Send simulated BDAG tokens"
-                        : "Send real BDAG tokens via MetaMask"}
+                      Send real BDAG tokens via MetaMask on BlockDAG Testnet
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleSend}>
@@ -416,7 +284,7 @@ const Wallet = () => {
                         <Label htmlFor="recipient">Recipient Address</Label>
                         <Input
                           id="recipient"
-                          placeholder={walletMode === "simulated" ? "BDAG_..." : "0x..."}
+                          placeholder="0x..."
                           value={recipientAddress}
                           onChange={(e) => setRecipientAddress(e.target.value)}
                           required
@@ -443,46 +311,6 @@ const Wallet = () => {
                   </form>
                 </DialogContent>
               </Dialog>
-
-              {walletMode === "simulated" && (
-                <Dialog open={receiveDialogOpen} onOpenChange={setReceiveDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="flex-1">
-                      <ArrowDown className="w-4 h-4 mr-2" />
-                      Receive
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Receive BDAG Tokens</DialogTitle>
-                      <DialogDescription>
-                        Simulate receiving BDAG tokens
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleReceive}>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="receive-amount">Amount</Label>
-                          <Input
-                            id="receive-amount"
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            value={receiveAmount}
-                            onChange={(e) => setReceiveAmount(e.target.value)}
-                            required
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter className="mt-6">
-                        <Button type="submit" disabled={receiveLoading}>
-                          {receiveLoading ? "Processing..." : "Receive Tokens"}
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -491,22 +319,18 @@ const Wallet = () => {
         <div className="grid md:grid-cols-2 gap-4 mb-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">
-                {walletMode === "simulated" ? "Simulated Wallet Address" : "MetaMask Address"}
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">MetaMask Address</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
                 <code className="flex-1 text-sm bg-muted px-3 py-2 rounded truncate">
-                  {walletMode === "simulated" ? profile?.wallet_address : (account || "Not connected")}
+                  {account || "Not connected"}
                 </code>
                 <Button
                   size="icon"
                   variant="outline"
-                  onClick={() => copyToClipboard(
-                    walletMode === "simulated" ? (profile?.wallet_address || "") : (account || "")
-                  )}
-                  disabled={walletMode === "live" && !account}
+                  onClick={() => copyToClipboard(account || "")}
+                  disabled={!account}
                 >
                   <Copy className="w-4 h-4" />
                 </Button>
@@ -533,63 +357,6 @@ const Wallet = () => {
           </Card>
         </div>
 
-        {/* Transaction History */}
-        {walletMode === "simulated" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>Your latest simulated BDAG transactions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {transactions.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No transactions yet</p>
-              ) : (
-                <div className="space-y-3">
-                  {transactions.map((tx) => (
-                    <div
-                      key={tx.id}
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${
-                          tx.transaction_type === "send" ? "bg-destructive/10" : "bg-primary/10"
-                        }`}>
-                          {tx.transaction_type === "send" ? (
-                            <Send className="w-4 h-4 text-destructive" />
-                          ) : (
-                            <ArrowDown className="w-4 h-4 text-primary" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-medium capitalize">{tx.transaction_type}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(tx.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className={`font-bold ${
-                          tx.transaction_type === "send" ? "text-destructive" : "text-primary"
-                        }`}>
-                          {tx.transaction_type === "send" ? "-" : "+"}{tx.amount.toFixed(2)} BDAG
-                        </p>
-                        {tx.transaction_hash && (
-                          <button
-                            onClick={() => copyToClipboard(tx.transaction_hash || "")}
-                            className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
-                          >
-                            {tx.transaction_hash.substring(0, 12)}...
-                            <Copy className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       <Footer />
