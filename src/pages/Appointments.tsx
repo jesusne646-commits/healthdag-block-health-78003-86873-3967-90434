@@ -317,7 +317,7 @@ const Appointments = () => {
               Wallet Requirement
             </AlertDialogTitle>
             <AlertDialogDescription className="text-base">
-              Note that booking an appointment is <span className="font-semibold text-foreground">free</span>, but you need to have at least <span className="font-semibold text-primary">1000 BDAG</span> in your wallet to proceed.
+              Note that booking an appointment is <span className="font-semibold text-foreground">free</span>, but you need to have at least <span className="font-semibold text-primary">100 BDAG</span> in your wallet to proceed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
