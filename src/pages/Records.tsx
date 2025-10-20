@@ -140,16 +140,29 @@ const Records = () => {
     }
   };
 
-  if (!accessGranted || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20">
+    <>
+      <EncryptionNotice
+        open={showEncryptionNotice}
+        title="🔒 Encrypted Medical Records"
+        description="This feature is fully encrypted on the blockchain. Please sign with your wallet to securely access your medical records."
+      />
+
+      <SignaturePrompt
+        open={isWaitingForSignature}
+        title="Accessing Encrypted Records"
+        description="Your medical records are encrypted on the blockchain. Please sign in your wallet to confirm your identity and access your health data."
+      />
+
+      {(!accessGranted || loading) ? (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-mesh">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/30 border-t-primary"></div>
+            <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-primary/20"></div>
+          </div>
+        </div>
+      ) : (
+        <div className="min-h-screen bg-gradient-mesh relative overflow-hidden">
       <header className="border-b border-primary/20 bg-background/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
@@ -163,99 +176,114 @@ const Records = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">Your Encrypted Health Records</h2>
-            <p className="text-muted-foreground">All records are encrypted and stored securely on BlockDAG</p>
-          </div>
-          {records.length > 0 && (
-            <Button 
-              onClick={handleGetAISummary} 
-              disabled={loadingSummary}
-              className="gap-2"
-            >
-              <Sparkles className="w-4 h-4" />
-              {loadingSummary ? "Analyzing..." : "Get AI Health Summary"}
-            </Button>
-          )}
-        </div>
+          <div className="container mx-auto px-4 py-8 relative z-10">
+            <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fade-in">
+              <div>
+                <h2 className="text-3xl font-bold mb-2 gradient-text-primary">Your Encrypted Health Records</h2>
+                <p className="text-muted-foreground text-lg">All records are encrypted and stored securely on BlockDAG</p>
+              </div>
+              {records.length > 0 && (
+                <Button 
+                  onClick={handleGetAISummary} 
+                  disabled={loadingSummary}
+                  className="gap-2 shadow-button hover:shadow-button-hover transition-all duration-300"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {loadingSummary ? "Analyzing..." : "Get AI Health Summary"}
+                </Button>
+              )}
+            </div>
 
-        {records.length === 0 ? (
-          <Card className="max-w-md mx-auto text-center py-12">
-            <CardHeader>
-              <CardTitle>No Records Found</CardTitle>
-              <CardDescription>You don't have any medical records yet</CardDescription>
-            </CardHeader>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {records.map((record) => (
-              <Card key={record.id}>
+            {records.length === 0 ? (
+              <Card className="max-w-md mx-auto text-center py-16 glass border-2 animate-bounce-in">
                 <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <FileText className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{record.title}</CardTitle>
-                        <CardDescription className="capitalize">{record.record_type}</CardDescription>
-                      </div>
-                    </div>
+                  <div className="inline-flex p-4 bg-primary/10 rounded-full mb-4 mx-auto">
+                    <FileText className="w-8 h-8 text-primary" />
                   </div>
+                  <CardTitle className="text-2xl">No Records Found</CardTitle>
+                  <CardDescription className="text-base mt-2">
+                    You don't have any medical records yet
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">{record.description}</p>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {new Date(record.created_at).toLocaleDateString()}
-                    </span>
-                    {record.file_url && (
-                      <Button variant="outline" size="sm">
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
               </Card>
-            ))}
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {records.map((record, index) => (
+                  <Card 
+                    key={record.id}
+                    className="group card-hover-lift glass border-2 overflow-hidden relative animate-fade-in-up"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    
+                    <CardHeader className="relative z-10">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-primary to-accent bg-opacity-10 group-hover:scale-110 transition-transform">
+                            <FileText className="w-5 h-5 text-primary" />
+                          </div>
+                        </div>
+                      </div>
+                      <CardTitle className="text-xl font-bold group-hover:gradient-text-primary transition-all">
+                        {record.title}
+                      </CardTitle>
+                      <CardDescription className="capitalize text-base font-medium">
+                        {record.record_type}
+                      </CardDescription>
+                    </CardHeader>
+                    
+                    <CardContent className="relative z-10">
+                      <p className="text-sm text-muted-foreground mb-5 line-clamp-2">{record.description}</p>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                          <span className="text-sm font-medium">Date:</span>
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(record.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {record.file_url && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full hover:scale-105 transition-transform"
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Download
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+
+                    {/* Bottom accent line */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-accent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <Dialog open={showSummary} onOpenChange={setShowSummary}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              AI Health Summary & Recommendations
-            </DialogTitle>
-            <DialogDescription>
-              Based on your medical records, here's a personalized health analysis
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4 prose prose-sm max-w-none">
-            <div className="whitespace-pre-wrap text-sm">{aiSummary}</div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          <Dialog open={showSummary} onOpenChange={setShowSummary}>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto glass">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  <Sparkles className="w-6 h-6 text-primary" />
+                  AI Health Summary & Recommendations
+                </DialogTitle>
+                <DialogDescription className="text-base">
+                  Based on your medical records, here's a personalized health analysis
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-4 prose prose-sm max-w-none">
+                <div className="whitespace-pre-wrap text-sm p-4 bg-muted/30 rounded-lg">{aiSummary}</div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
-      <EncryptionNotice
-        open={showEncryptionNotice}
-        title="🔒 Encrypted Medical Records"
-        description="This feature is fully encrypted on the blockchain. Please sign with your wallet to securely access your medical records."
-      />
-
-      <SignaturePrompt
-        open={isWaitingForSignature}
-        title="Accessing Encrypted Records"
-        description="Your medical records are encrypted on the blockchain. Please sign in your wallet to confirm your identity and access your health data."
-      />
-
-      <Footer />
-    </div>
+          <Footer />
+        </div>
+      )}
+    </>
   );
 };
 

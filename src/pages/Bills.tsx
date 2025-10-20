@@ -205,19 +205,32 @@ const Bills = () => {
     { key: "consultation", label: "Consultation", icon: Stethoscope },
   ];
 
-  if (!accessGranted || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-mesh">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/30 border-t-primary"></div>
-          <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-primary/20"></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-mesh relative overflow-hidden">
+    <>
+      <EncryptionNotice
+        open={showEncryptionNotice}
+        title="🔒 Encrypted Bill Payment"
+        description="This feature is fully encrypted on the blockchain. Please sign with your wallet to securely access your medical bills."
+      />
+
+      <SignaturePrompt
+        open={isWaitingForSignature}
+        title={accessGranted ? "Encrypting Payment" : "Accessing Encrypted Bills"}
+        description={accessGranted 
+          ? "This payment transaction is being encrypted on the blockchain. Please sign in your wallet to confirm your identity and secure your payment data."
+          : "Your medical bills are encrypted on the blockchain. Please sign in your wallet to confirm your identity and access your billing data."
+        }
+      />
+
+      {(!accessGranted || loading) ? (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-mesh">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/30 border-t-primary"></div>
+            <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-primary/20"></div>
+          </div>
+        </div>
+      ) : (
+        <div className="min-h-screen bg-gradient-mesh relative overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float"></div>
@@ -345,23 +358,10 @@ const Bills = () => {
         )}
       </div>
 
-      <EncryptionNotice
-        open={showEncryptionNotice}
-        title="🔒 Encrypted Bill Payment"
-        description="This feature is fully encrypted on the blockchain. Please sign with your wallet to securely access your medical bills."
-      />
-
-      <SignaturePrompt
-        open={isWaitingForSignature}
-        title={accessGranted ? "Encrypting Payment" : "Accessing Encrypted Bills"}
-        description={accessGranted 
-          ? "This payment transaction is being encrypted on the blockchain. Please sign in your wallet to confirm your identity and secure your payment data."
-          : "Your medical bills are encrypted on the blockchain. Please sign in your wallet to confirm your identity and access your billing data."
-        }
-      />
-
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+      )}
+    </>
   );
 };
 
