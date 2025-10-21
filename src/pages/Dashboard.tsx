@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, FileText, AlertCircle, Wallet, CreditCard, LogOut, Shield, Sparkles } from "lucide-react";
+import { Calendar, FileText, AlertCircle, Wallet, CreditCard, LogOut, Shield, Sparkles, Heart } from "lucide-react";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import AIAssistant from "@/components/AIAssistant";
 import Footer from "@/components/Footer";
@@ -70,6 +70,15 @@ const Dashboard = () => {
   }
 
   const actionCards = [
+    {
+      title: "Donate to Patients",
+      description: "Support verified patients in need",
+      icon: Heart,
+      path: "/donations",
+      gradient: "from-rose-500 via-pink-500 to-red-500",
+      iconBg: "bg-gradient-to-br from-rose-500/10 to-red-500/10",
+      iconColor: "text-rose-600",
+    },
     {
       title: "Book Appointment",
       description: "Search and book with hospitals",
