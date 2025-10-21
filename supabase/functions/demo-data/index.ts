@@ -165,6 +165,123 @@ serve(async (req) => {
       console.error('Error creating emergency data:', emergencyError);
     }
 
+    // Get Dutse hospitals for campaigns
+    const { data: dutseHospitals } = await supabase
+      .from('hospitals')
+      .select('id')
+      .eq('city', 'Dutse')
+      .limit(2);
+
+    // Create demo donation campaigns with Northern Nigerian names
+    if (dutseHospitals && dutseHospitals.length > 0) {
+      const campaignsData = [
+        {
+          patient_id: user.id,
+          hospital_id: dutseHospitals[0].id,
+          title: 'Urgent Heart Surgery for Abubakar',
+          description: 'Young father needs critical heart surgery to survive and care for his family',
+          illness_category: 'Heart Surgery',
+          target_amount: 5000,
+          raised_amount: 1250,
+          urgency_level: 'critical',
+          patient_age: 34,
+          patient_story: 'Abubakar is a dedicated father of three who was recently diagnosed with a severe heart condition requiring immediate surgery. As the sole breadwinner of his family, this diagnosis has been devastating both emotionally and financially.',
+          status: 'active',
+          verified_at: new Date().toISOString(),
+          verified_by: user.id,
+          end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          patient_id: user.id,
+          hospital_id: dutseHospitals[1]?.id || dutseHospitals[0].id,
+          title: 'Cancer Treatment for Fatima',
+          description: 'Mother of four needs chemotherapy and radiation treatment',
+          illness_category: 'Cancer',
+          target_amount: 8000,
+          raised_amount: 3200,
+          urgency_level: 'urgent',
+          patient_age: 42,
+          patient_story: 'Fatima, a loving mother, was diagnosed with breast cancer last year. Despite her fighting spirit, the cost of treatment has overwhelmed her family. She needs ongoing chemotherapy and radiation therapy.',
+          status: 'active',
+          verified_at: new Date().toISOString(),
+          verified_by: user.id,
+          end_date: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          patient_id: user.id,
+          hospital_id: hospitals[0].id,
+          title: 'Kidney Treatment for Muhammad',
+          description: 'Young man requires dialysis and eventual kidney transplant',
+          illness_category: 'Kidney Treatment',
+          target_amount: 12000,
+          raised_amount: 4500,
+          urgency_level: 'urgent',
+          patient_age: 28,
+          patient_story: 'Muhammad is a promising young professional whose life was turned upside down by kidney failure. He requires regular dialysis and is on the waiting list for a transplant.',
+          status: 'active',
+          verified_at: new Date().toISOString(),
+          verified_by: user.id,
+          end_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          patient_id: user.id,
+          hospital_id: hospitals[1].id,
+          title: 'Emergency Surgery for Aisha',
+          description: 'Accident victim needs multiple reconstructive surgeries',
+          illness_category: 'Accident Recovery',
+          target_amount: 6500,
+          raised_amount: 5200,
+          urgency_level: 'moderate',
+          patient_age: 19,
+          patient_story: 'Aisha, a university student, was involved in a severe road accident. She survived but needs multiple surgeries to fully recover and return to her studies.',
+          status: 'active',
+          verified_at: new Date().toISOString(),
+          verified_by: user.id,
+          end_date: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          patient_id: user.id,
+          hospital_id: hospitals[2].id,
+          title: 'Critical Care for Usman',
+          description: 'Child needs specialized treatment for rare genetic condition',
+          illness_category: 'Other',
+          target_amount: 10000,
+          raised_amount: 2800,
+          urgency_level: 'critical',
+          patient_age: 7,
+          patient_story: 'Little Usman was born with a rare genetic condition that requires specialized treatment. His parents have exhausted all their resources trying to get him the care he needs.',
+          status: 'active',
+          verified_at: new Date().toISOString(),
+          verified_by: user.id,
+          end_date: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          patient_id: user.id,
+          hospital_id: dutseHospitals[0].id,
+          title: 'Diabetes Management for Khadija',
+          description: 'Long-term diabetes care and insulin therapy needed',
+          illness_category: 'Other',
+          target_amount: 4000,
+          raised_amount: 3500,
+          urgency_level: 'moderate',
+          patient_age: 51,
+          patient_story: 'Khadija has been battling diabetes for years. With proper medication and care, she can lead a normal life, but the ongoing costs are overwhelming for her family.',
+          status: 'active',
+          verified_at: new Date().toISOString(),
+          verified_by: user.id,
+          end_date: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+
+      const { error: campaignsError } = await supabase
+        .from('donation_campaigns')
+        .insert(campaignsData);
+
+      if (campaignsError) {
+        console.error('Error creating donation campaigns:', campaignsError);
+      }
+    }
+
     // Create demo insurance policy
     const policyData = {
       user_id: user.id,
