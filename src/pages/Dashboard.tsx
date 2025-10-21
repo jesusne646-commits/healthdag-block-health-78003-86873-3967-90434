@@ -8,6 +8,7 @@ import { Calendar, FileText, AlertCircle, Wallet, CreditCard, LogOut, Shield, Sp
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import AIAssistant from "@/components/AIAssistant";
 import Footer from "@/components/Footer";
+import { ActivityLog } from "@/components/ActivityLog";
 import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
@@ -240,6 +241,11 @@ const Dashboard = () => {
             <h3 className="font-semibold mb-2">BDAG Payments</h3>
             <p className="text-sm text-muted-foreground">Fast, secure cryptocurrency transactions</p>
           </div>
+        </div>
+
+        {/* Activity Log */}
+        <div className="mt-16 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+          <ActivityLog />
         </div>
       </div>
 

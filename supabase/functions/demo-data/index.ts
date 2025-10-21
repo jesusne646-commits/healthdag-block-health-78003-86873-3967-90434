@@ -309,6 +309,39 @@ serve(async (req) => {
       console.error('Error creating insurance policy:', policyError);
     }
 
+    // Create demo activity logs
+    const activityLogsData = [
+      {
+        user_id: user.id,
+        activity_type: 'record',
+        title: 'Medical Records Added',
+        description: 'Added 5 new medical records to your profile',
+        metadata: { count: 5 }
+      },
+      {
+        user_id: user.id,
+        activity_type: 'appointment',
+        title: 'Appointments Scheduled',
+        description: 'Scheduled 2 upcoming appointments',
+        metadata: { count: 2 }
+      },
+      {
+        user_id: user.id,
+        activity_type: 'payment',
+        title: 'Insurance Policy Activated',
+        description: 'BlockDAG Health Insurance Premium plan activated',
+        metadata: { policy_number: policyData.policy_number }
+      }
+    ];
+
+    const { error: activityError } = await supabase
+      .from('activity_logs')
+      .insert(activityLogsData);
+
+    if (activityError) {
+      console.error('Error creating activity logs:', activityError);
+    }
+
     console.log('Demo data generated successfully');
 
     return new Response(
