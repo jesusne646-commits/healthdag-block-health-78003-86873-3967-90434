@@ -30,6 +30,9 @@ export const DonationCard = ({ campaign, onDonate }: DonationCardProps) => {
   const daysRemaining = campaign.end_date
     ? Math.max(0, Math.ceil((new Date(campaign.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
     : null;
+  
+  // Extract patient name from title (format: "... for [Name]")
+  const patientName = campaign.title.split(' for ').pop() || campaign.profiles.full_name?.split(" ")[0] || "Anonymous";
 
   const getUrgencyColor = (level: string) => {
     switch (level) {
@@ -52,7 +55,7 @@ export const DonationCard = ({ campaign, onDonate }: DonationCardProps) => {
               {campaign.title}
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              {campaign.profiles.full_name?.split(" ")[0] || "Anonymous"}, {campaign.patient_age}
+              {patientName}, {campaign.patient_age}
             </p>
           </div>
           <Badge className={getUrgencyColor(campaign.urgency_level)}>
