@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import Footer from "@/components/Footer";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 type InsurancePolicy = {
   id: string;
@@ -124,6 +125,7 @@ const Insurance = () => {
               BlockDAG Health Insurance
             </h1>
           </div>
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </header>

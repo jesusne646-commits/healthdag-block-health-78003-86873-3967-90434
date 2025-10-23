@@ -13,6 +13,7 @@ import { useMetaMask } from "@/hooks/useMetaMask";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import Footer from "@/components/Footer";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 type Profile = {
   wallet_address: string;
@@ -169,6 +170,7 @@ const Wallet = () => {
               My Wallet
             </h1>
           </div>
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </header>

@@ -2,13 +2,15 @@ import { Button } from "@/components/ui/button";
 import { Shield, Lock, Brain } from "lucide-react";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden px-4 py-20">
       {/* Fixed header with theme toggle */}
       <div className="absolute top-0 left-0 right-0 z-50 border-b border-primary/10 bg-background/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-end">
+        <div className="container mx-auto px-4 py-4 flex justify-end gap-2">
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </div>

@@ -10,6 +10,7 @@ import { DonationModal } from "@/components/DonationModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 
 interface Campaign {
@@ -125,6 +126,7 @@ const Donations = () => {
                 Donate to Patients
               </h1>
             </div>
+            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

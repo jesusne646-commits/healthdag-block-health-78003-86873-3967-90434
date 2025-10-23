@@ -14,6 +14,7 @@ import Footer from "@/components/Footer";
 import { SignaturePrompt } from "@/components/SignaturePrompt";
 import { useSignature } from "@/hooks/useSignature";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 type Hospital = {
   id: string;
@@ -157,6 +158,7 @@ const Appointments = () => {
               Book Appointment
             </h1>
           </div>
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </header>

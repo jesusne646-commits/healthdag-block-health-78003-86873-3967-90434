@@ -11,12 +11,15 @@ import Footer from "@/components/Footer";
 import { ActivityLog } from "@/components/ActivityLog";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const generateDemoDataIfNeeded = async () => {
     try {
@@ -73,8 +76,8 @@ const Dashboard = () => {
 
   const actionCards = [
     {
-      title: "Donate to Patients",
-      description: "Support verified patients in need",
+      titleKey: "dashboard.donate",
+      descKey: "dashboard.donate.desc",
       icon: Heart,
       path: "/donations",
       gradient: "from-rose-500 via-pink-500 to-red-500",
@@ -82,8 +85,8 @@ const Dashboard = () => {
       iconColor: "text-rose-600",
     },
     {
-      title: "Book Appointment",
-      description: "Search and book with hospitals",
+      titleKey: "dashboard.bookAppointment",
+      descKey: "dashboard.bookAppointment.desc",
       icon: Calendar,
       path: "/appointments",
       gradient: "from-primary via-primary-light to-accent",
@@ -91,8 +94,8 @@ const Dashboard = () => {
       iconColor: "text-primary",
     },
     {
-      title: "Pay Medical Bill",
-      description: "Pay with BDAG tokens",
+      titleKey: "dashboard.payBill",
+      descKey: "dashboard.payBill.desc",
       icon: CreditCard,
       path: "/bills",
       gradient: "from-accent via-accent-light to-secondary",
@@ -100,8 +103,8 @@ const Dashboard = () => {
       iconColor: "text-accent",
     },
     {
-      title: "Medical Records",
-      description: "View encrypted health data",
+      titleKey: "dashboard.records",
+      descKey: "dashboard.records.desc",
       icon: FileText,
       path: "/records",
       gradient: "from-secondary via-secondary-light to-primary",
@@ -109,8 +112,8 @@ const Dashboard = () => {
       iconColor: "text-secondary",
     },
     {
-      title: "Emergency Access",
-      description: "QR code & critical info",
+      titleKey: "dashboard.emergency",
+      descKey: "dashboard.emergency.desc",
       icon: AlertCircle,
       path: "/emergency",
       gradient: "from-destructive via-warning to-warning",
@@ -118,8 +121,8 @@ const Dashboard = () => {
       iconColor: "text-destructive",
     },
     {
-      title: "My Wallet",
-      description: "BDAG balance, send/receive tokens",
+      titleKey: "dashboard.wallet",
+      descKey: "dashboard.wallet.desc",
       icon: Wallet,
       path: "/wallet",
       gradient: "from-success via-accent to-primary",
@@ -127,8 +130,8 @@ const Dashboard = () => {
       iconColor: "text-success",
     },
     {
-      title: "BlockDAG Health Insurance",
-      description: "BlockDAG coverage & claims",
+      titleKey: "dashboard.insurance",
+      descKey: "dashboard.insurance.desc",
       icon: Shield,
       path: "/insurance",
       gradient: "from-primary via-secondary to-accent",
@@ -136,8 +139,8 @@ const Dashboard = () => {
       iconColor: "text-primary",
     },
     {
-      title: "Security & Compliance",
-      description: "NIST & ISO standards alignment",
+      titleKey: "dashboard.compliance",
+      descKey: "dashboard.compliance.desc",
       icon: Award,
       path: "/compliance",
       gradient: "from-purple-500 via-pink-500 to-primary",
@@ -165,6 +168,7 @@ const Dashboard = () => {
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageToggle />
             <ThemeToggle />
             <Button 
               variant="outline" 
@@ -173,7 +177,7 @@ const Dashboard = () => {
               className="hover:shadow-button transition-all duration-300 hover:scale-105"
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              {t("nav.signOut")}
             </Button>
           </div>
         </div>
@@ -187,10 +191,10 @@ const Dashboard = () => {
             <span className="text-sm font-medium text-primary">Welcome to HealthDAG 2.0</span>
           </div>
           <h2 className="text-5xl md:text-6xl font-bold mb-4 gradient-text">
-            Welcome back!
+            {t("dashboard.welcome")}
           </h2>
           <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
-            Manage your healthcare from one secure, beautiful dashboard
+            {t("dashboard.subtitle")}
           </p>
         </div>
 
@@ -215,10 +219,10 @@ const Dashboard = () => {
                     </div>
                     <div>
                       <CardTitle className="text-xl mb-1 group-hover:gradient-text-primary transition-all">
-                        {card.title}
+                        {t(card.titleKey)}
                       </CardTitle>
                       <CardDescription className="text-sm">
-                        {card.description}
+                        {t(card.descKey)}
                       </CardDescription>
                     </div>
                   </div>

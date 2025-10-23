@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import Footer from "@/components/Footer";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const Emergency = () => {
   const [bloodType, setBloodType] = useState("");
@@ -116,6 +117,7 @@ const Emergency = () => {
               Emergency Access
             </h1>
           </div>
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </header>

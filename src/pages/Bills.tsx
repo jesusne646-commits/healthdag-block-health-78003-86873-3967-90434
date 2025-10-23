@@ -12,6 +12,7 @@ import { SignaturePrompt } from "@/components/SignaturePrompt";
 import { EncryptionNotice } from "@/components/EncryptionNotice";
 import { useSignature } from "@/hooks/useSignature";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 type Bill = {
   id: string;
@@ -250,6 +251,7 @@ const Bills = () => {
               Medical Bills
             </h1>
           </div>
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </header>

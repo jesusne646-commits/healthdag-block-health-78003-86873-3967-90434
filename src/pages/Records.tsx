@@ -16,6 +16,7 @@ import { SignaturePrompt } from "@/components/SignaturePrompt";
 import { EncryptionNotice } from "@/components/EncryptionNotice";
 import { useSignature } from "@/hooks/useSignature";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 type Record = {
   id: string;
@@ -181,6 +182,7 @@ const Records = () => {
               Medical Records
             </h1>
           </div>
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </header>

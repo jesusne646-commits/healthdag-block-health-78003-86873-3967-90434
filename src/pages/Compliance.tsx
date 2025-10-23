@@ -9,6 +9,7 @@ import { ArrowLeft, Shield, CheckCircle2, Lock, FileText, Activity, Key } from "
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import Footer from "@/components/Footer";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 type ComplianceMetric = {
   category: string;
@@ -147,6 +148,7 @@ const Compliance = () => {
               Security & Compliance
             </h1>
           </div>
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </header>
