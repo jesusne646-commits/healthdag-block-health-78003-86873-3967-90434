@@ -11,6 +11,7 @@ import Footer from "@/components/Footer";
 import { SignaturePrompt } from "@/components/SignaturePrompt";
 import { EncryptionNotice } from "@/components/EncryptionNotice";
 import { useSignature } from "@/hooks/useSignature";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type Bill = {
   id: string;
@@ -238,15 +239,18 @@ const Bills = () => {
       </div>
 
       <header className="glass sticky top-0 z-50 border-b border-primary/10">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="hover:scale-105 transition-transform">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <img src={healthdagLogo} alt="HealthDAG" className="w-8 h-8 drop-shadow-lg" />
-          <h1 className="text-xl font-bold gradient-text-primary">
-            Medical Bills
-          </h1>
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="hover:scale-105 transition-transform">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <img src={healthdagLogo} alt="HealthDAG" className="w-8 h-8 drop-shadow-lg" />
+            <h1 className="text-xl font-bold gradient-text-primary">
+              Medical Bills
+            </h1>
+          </div>
+          <ThemeToggle />
         </div>
       </header>
 

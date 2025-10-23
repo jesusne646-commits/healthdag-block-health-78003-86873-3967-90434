@@ -10,6 +10,7 @@ import AIAssistant from "@/components/AIAssistant";
 import Footer from "@/components/Footer";
 import { ActivityLog } from "@/components/ActivityLog";
 import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -163,15 +164,18 @@ const Dashboard = () => {
               HealthDAG
             </h1>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleSignOut}
-            className="hover:shadow-button transition-all duration-300 hover:scale-105"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSignOut}
+              className="hover:shadow-button transition-all duration-300 hover:scale-105"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 

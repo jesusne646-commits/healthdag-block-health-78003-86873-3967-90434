@@ -9,6 +9,7 @@ import { ArrowLeft, QrCode, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import Footer from "@/components/Footer";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Emergency = () => {
   const [bloodType, setBloodType] = useState("");
@@ -104,15 +105,18 @@ const Emergency = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20">
       <header className="border-b border-primary/20 bg-background/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <img src={healthdagLogo} alt="HealthDAG" className="w-8 h-8" />
-          <h1 className="text-xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-            Emergency Access
-          </h1>
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <img src={healthdagLogo} alt="HealthDAG" className="w-8 h-8" />
+            <h1 className="text-xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              Emergency Access
+            </h1>
+          </div>
+          <ThemeToggle />
         </div>
       </header>
 

@@ -1,19 +1,29 @@
 import { Button } from "@/components/ui/button";
 import { Shield, Lock, Brain } from "lucide-react";
 import healthdagLogo from "@/assets/healthdag-logo.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 py-20">
-      {/* Gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-secondary/20" />
+    <section className="relative min-h-screen flex flex-col overflow-hidden px-4 py-20">
+      {/* Fixed header with theme toggle */}
+      <div className="absolute top-0 left-0 right-0 z-50 border-b border-primary/10 bg-background/50 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4 flex justify-end">
+          <ThemeToggle />
+        </div>
+      </div>
       
-      {/* Animated glow effects */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse delay-1000" />
-      
-      <div className="container relative z-10 max-w-6xl mx-auto">
-        <div className="text-center space-y-8">
+      {/* Main content - centered */}
+      <div className="flex-1 flex items-center justify-center">
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-secondary/20" />
+        
+        {/* Animated glow effects */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        
+        <div className="container relative z-10 max-w-6xl mx-auto">
+          <div className="text-center space-y-8">
           {/* Logo */}
           <div className="flex justify-center mb-8 animate-fade-in">
             <img 
@@ -70,6 +80,7 @@ const Hero = () => {
             >
               Learn More
             </Button>
+          </div>
           </div>
         </div>
       </div>

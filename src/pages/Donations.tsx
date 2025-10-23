@@ -9,6 +9,8 @@ import { DonationCard } from "@/components/DonationCard";
 import { DonationModal } from "@/components/DonationModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import healthdagLogo from "@/assets/healthdag-logo.png";
 
 interface Campaign {
   id: string;
@@ -109,14 +111,21 @@ const Donations = () => {
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/dashboard")}
-              className="gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Dashboard
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/dashboard")}
+                className="gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Dashboard
+              </Button>
+              <img src={healthdagLogo} alt="HealthDAG" className="w-8 h-8" />
+              <h1 className="text-xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                Donate to Patients
+              </h1>
+            </div>
+            <ThemeToggle />
           </div>
         </div>
       </div>
