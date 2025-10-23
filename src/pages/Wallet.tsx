@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Send, Copy, ExternalLink, Wallet as WalletIcon, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Send, Copy, ExternalLink, Wallet as WalletIcon, Link as LinkIcon, Droplet, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMetaMask } from "@/hooks/useMetaMask";
 import healthdagLogo from "@/assets/healthdag-logo.png";
@@ -38,6 +38,8 @@ const Wallet = () => {
   const [loading, setLoading] = useState(true);
   const [sendLoading, setSendLoading] = useState(false);
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [claimingFaucet, setClaimingFaucet] = useState(false);
+  const [nextClaimTime, setNextClaimTime] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -90,6 +92,31 @@ const Wallet = () => {
     }
 
     setLoading(false);
+  };
+
+  const handleClaimFaucet = async () => {
+    if (!profile?.wallet_address) {
+      toast({ title: "Error", description: "Wallet address not found", variant: "destructive" });
+      return;
+    }
+
+    setClaimingFaucet(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('claim-faucet', {
+        body: { wallet_address: profile.wallet_address }
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Success!", description: data.message });
+      setNextClaimTime(data.nextClaimTime);
+      fetchWalletData();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setClaimingFaucet(false);
+    }
   };
 
   const handleSend = async (e: React.FormEvent) => {
@@ -252,6 +279,32 @@ const Wallet = () => {
                 </Button>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Faucet Card */}
+        <Card className="mb-6 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Droplet className="w-5 h-5" />
+              Free Test BDAG Faucet
+            </CardTitle>
+            <CardDescription>Claim 50 free test BDAG tokens once every 24 hours</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={handleClaimFaucet} 
+              disabled={claimingFaucet || !!nextClaimTime}
+              className="w-full"
+            >
+              {claimingFaucet ? "Claiming..." : nextClaimTime ? "Claimed - Wait 24h" : "Claim 50 Free BDAG"}
+            </Button>
+            {nextClaimTime && (
+              <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                Next claim: {new Date(nextClaimTime).toLocaleString()}
+              </p>
+            )}
           </CardContent>
         </Card>
 

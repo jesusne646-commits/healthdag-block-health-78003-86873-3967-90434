@@ -175,6 +175,51 @@ export type Database = {
           },
         ]
       }
+      bdag_purchases: {
+        Row: {
+          bdag_amount: number
+          created_at: string
+          exchange_rate: number | null
+          fiat_amount: number | null
+          fiat_currency: string | null
+          id: string
+          payment_method: string
+          payment_provider: string | null
+          status: string
+          transaction_reference: string | null
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          bdag_amount: number
+          created_at?: string
+          exchange_rate?: number | null
+          fiat_amount?: number | null
+          fiat_currency?: string | null
+          id?: string
+          payment_method: string
+          payment_provider?: string | null
+          status?: string
+          transaction_reference?: string | null
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          bdag_amount?: number
+          created_at?: string
+          exchange_rate?: number | null
+          fiat_amount?: number | null
+          fiat_currency?: string | null
+          id?: string
+          payment_method?: string
+          payment_provider?: string | null
+          status?: string
+          transaction_reference?: string | null
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       compliance_metrics: {
         Row: {
           id: string
@@ -359,6 +404,30 @@ export type Database = {
           qr_code?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      faucet_claims: {
+        Row: {
+          amount: number
+          claimed_at: string
+          id: string
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          amount: number
+          claimed_at?: string
+          id?: string
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          amount?: number
+          claimed_at?: string
+          id?: string
+          user_id?: string
+          wallet_address?: string
         }
         Relationships: []
       }

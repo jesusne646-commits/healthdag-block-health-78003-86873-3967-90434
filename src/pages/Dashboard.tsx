@@ -147,6 +147,15 @@ const Dashboard = () => {
       iconBg: "bg-gradient-to-br from-purple-500/10 to-pink-500/10",
       iconColor: "text-purple-600",
     },
+    {
+      titleKey: "dashboard.buyBdag",
+      descKey: "dashboard.buyBdag.desc",
+      icon: CreditCard,
+      path: "/buy-bdag",
+      gradient: "from-green-500 via-emerald-500 to-teal-500",
+      iconBg: "bg-gradient-to-br from-green-500/10 to-teal-500/10",
+      iconColor: "text-green-600",
+    },
   ];
 
   return (
