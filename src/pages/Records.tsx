@@ -8,6 +8,7 @@ import { ArrowLeft, FileText, Download, Sparkles, Share2 } from "lucide-react";
 import { ShareRecordsDialog } from "@/components/ShareRecordsDialog";
 import { SharedAccessLog } from "@/components/SharedAccessLog";
 import { AccessRequestCard } from "@/components/AccessRequestCard";
+import { PendingAccessRequests } from "@/components/PendingAccessRequests";
 import { useToast } from "@/hooks/use-toast";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import Footer from "@/components/Footer";
@@ -209,6 +210,9 @@ const Records = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="lg:col-span-3">
+                <PendingAccessRequests />
+              </div>
               <div className="lg:col-span-3">
                 <AccessRequestCard />
               </div>
