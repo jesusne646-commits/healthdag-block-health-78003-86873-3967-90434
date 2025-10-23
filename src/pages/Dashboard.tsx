@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, FileText, AlertCircle, Wallet, CreditCard, LogOut, Shield, Sparkles, Heart } from "lucide-react";
+import { Calendar, FileText, AlertCircle, Wallet, CreditCard, LogOut, Shield, Sparkles, Heart, Award } from "lucide-react";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import AIAssistant from "@/components/AIAssistant";
 import Footer from "@/components/Footer";
@@ -133,6 +133,15 @@ const Dashboard = () => {
       gradient: "from-primary via-secondary to-accent",
       iconBg: "bg-gradient-to-br from-primary/10 to-secondary/10",
       iconColor: "text-primary",
+    },
+    {
+      title: "Security & Compliance",
+      description: "NIST & ISO standards alignment",
+      icon: Award,
+      path: "/compliance",
+      gradient: "from-purple-500 via-pink-500 to-primary",
+      iconBg: "bg-gradient-to-br from-purple-500/10 to-pink-500/10",
+      iconColor: "text-purple-600",
     },
   ];
 

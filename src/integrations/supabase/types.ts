@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_grants: {
+        Row: {
+          access_count: number | null
+          created_at: string
+          expires_at: string
+          id: string
+          last_accessed_at: string | null
+          metadata: Json | null
+          patient_id: string
+          recipient_name: string | null
+          recipient_wallet_address: string
+          resource_ids: string[]
+          resource_type: string
+          revoked: boolean | null
+          revoked_at: string | null
+          shared_encryption_key: string
+          signature: string
+        }
+        Insert: {
+          access_count?: number | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_accessed_at?: string | null
+          metadata?: Json | null
+          patient_id: string
+          recipient_name?: string | null
+          recipient_wallet_address: string
+          resource_ids: string[]
+          resource_type: string
+          revoked?: boolean | null
+          revoked_at?: string | null
+          shared_encryption_key: string
+          signature: string
+        }
+        Update: {
+          access_count?: number | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_accessed_at?: string | null
+          metadata?: Json | null
+          patient_id?: string
+          recipient_name?: string | null
+          recipient_wallet_address?: string
+          resource_ids?: string[]
+          resource_type?: string
+          revoked?: boolean | null
+          revoked_at?: string | null
+          shared_encryption_key?: string
+          signature?: string
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           activity_type: string
@@ -81,6 +135,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      compliance_metrics: {
+        Row: {
+          id: string
+          metric_type: string
+          metric_value: number
+          recorded_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          metric_type: string
+          metric_value: number
+          recorded_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          metric_type?: string
+          metric_value?: number
+          recorded_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       donation_campaigns: {
         Row: {

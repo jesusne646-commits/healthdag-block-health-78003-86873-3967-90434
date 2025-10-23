@@ -4,7 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, FileText, Download, Sparkles } from "lucide-react";
+import { ArrowLeft, FileText, Download, Sparkles, Share2 } from "lucide-react";
+import { ShareRecordsDialog } from "@/components/ShareRecordsDialog";
+import { SharedAccessLog } from "@/components/SharedAccessLog";
+import { AccessRequestCard } from "@/components/AccessRequestCard";
 import { useToast } from "@/hooks/use-toast";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import Footer from "@/components/Footer";
@@ -29,6 +32,7 @@ const Records = () => {
   const [aiSummary, setAiSummary] = useState("");
   const [accessGranted, setAccessGranted] = useState(false);
   const [showEncryptionNotice, setShowEncryptionNotice] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { requestSignature, isWaitingForSignature } = useSignature();
@@ -183,15 +187,31 @@ const Records = () => {
                 <p className="text-muted-foreground text-lg">All records are encrypted and stored securely on BlockDAG</p>
               </div>
               {records.length > 0 && (
-                <Button 
-                  onClick={handleGetAISummary} 
-                  disabled={loadingSummary}
-                  className="gap-2 shadow-button hover:shadow-button-hover transition-all duration-300"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  {loadingSummary ? "Analyzing..." : "Get AI Health Summary"}
-                </Button>
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={() => setShowShareDialog(true)}
+                    variant="outline"
+                    className="gap-2 shadow-button hover:shadow-button-hover transition-all duration-300"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Share Records
+                  </Button>
+                  <Button 
+                    onClick={handleGetAISummary} 
+                    disabled={loadingSummary}
+                    className="gap-2 shadow-button hover:shadow-button-hover transition-all duration-300"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    {loadingSummary ? "Analyzing..." : "Get AI Health Summary"}
+                  </Button>
+                </div>
               )}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="lg:col-span-3">
+                <AccessRequestCard />
+              </div>
             </div>
 
             {records.length === 0 ? (
@@ -207,6 +227,8 @@ const Records = () => {
                 </CardHeader>
               </Card>
             ) : (
+              <>
+              <div className="mb-8">{/* Records grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {records.map((record, index) => (
                   <Card 
@@ -260,8 +282,19 @@ const Records = () => {
                   </Card>
                 ))}
               </div>
+              </div>
+
+              <SharedAccessLog />
+              </>
             )}
           </div>
+
+          <ShareRecordsDialog
+            open={showShareDialog}
+            onOpenChange={setShowShareDialog}
+            records={records}
+            onSuccess={() => {}}
+          />
 
           <Dialog open={showSummary} onOpenChange={setShowSummary}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto glass">

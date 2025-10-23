@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Activity, CreditCard, FileText, Calendar, Heart, Clock } from "lucide-react";
+import { Activity, CreditCard, FileText, Calendar, Heart, Clock, Share2, Shield } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface ActivityLog {
@@ -75,6 +75,8 @@ export const ActivityLog = () => {
         return <FileText className="w-4 h-4" />;
       case "appointment":
         return <Calendar className="w-4 h-4" />;
+      case "share":
+        return <Share2 className="w-4 h-4" />;
       default:
         return <Activity className="w-4 h-4" />;
     }
@@ -90,6 +92,8 @@ export const ActivityLog = () => {
         return "bg-blue-500/10 text-blue-700 dark:text-blue-400";
       case "appointment":
         return "bg-purple-500/10 text-purple-700 dark:text-purple-400";
+      case "share":
+        return "bg-orange-500/10 text-orange-700 dark:text-orange-400";
       default:
         return "bg-gray-500/10 text-gray-700 dark:text-gray-400";
     }
@@ -138,8 +142,11 @@ export const ActivityLog = () => {
                   key={activity.id}
                   className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
                 >
-                  <div className={`p-2 rounded-lg ${getActivityColor(activity.activity_type)}`}>
+                  <div className={`p-2 rounded-lg ${getActivityColor(activity.activity_type)} relative`}>
                     {getActivityIcon(activity.activity_type)}
+                    {(activity.activity_type === 'record' || activity.activity_type === 'share') && (
+                      <Shield className="w-3 h-3 text-green-500 absolute -top-1 -right-1" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
