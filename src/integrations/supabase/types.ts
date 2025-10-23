@@ -68,6 +68,45 @@ export type Database = {
         }
         Relationships: []
       }
+      access_requests: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          patient_id: string
+          reason: string | null
+          requester_name: string | null
+          requester_wallet_address: string
+          resource_type: string
+          responded_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          patient_id: string
+          reason?: string | null
+          requester_name?: string | null
+          requester_wallet_address: string
+          resource_type: string
+          responded_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          patient_id?: string
+          reason?: string | null
+          requester_name?: string | null
+          requester_wallet_address?: string
+          resource_type?: string
+          responded_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           activity_type: string
