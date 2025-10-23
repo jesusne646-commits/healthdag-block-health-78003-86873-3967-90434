@@ -108,7 +108,7 @@ export default function BuyBDAG() {
 
       if (error) throw error;
 
-      toast.success(`Successfully purchased ${bdagAmount.toFixed(2)} BDAG!`);
+      toast.success(`Purchase initiated! ${bdagAmount.toFixed(2)} BDAG tokens will be sent to your wallet within 24 hours.`);
       fetchData();
       setAmount('100');
     } catch (error: any) {
