@@ -105,18 +105,22 @@ const DoctorDashboard = () => {
   };
 
   const startQRScanner = async () => {
-    try {
-      setScanning(true);
-      
-      // Clean up existing instance if any
-      if (html5QrCode) {
-        try {
-          await html5QrCode.stop();
-        } catch (e) {
-          console.log("Cleanup previous scanner:", e);
-        }
+    // Clean up existing instance if any
+    if (html5QrCode) {
+      try {
+        await html5QrCode.stop();
+      } catch (e) {
+        console.log("Cleanup previous scanner:", e);
       }
+    }
 
+    // Set scanning to true first, so the div gets rendered
+    setScanning(true);
+    
+    // Wait for next tick to ensure the div is rendered
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    try {
       const qrCodeScanner = new Html5Qrcode("qr-reader");
       setHtml5QrCode(qrCodeScanner);
       
@@ -373,14 +377,19 @@ const DoctorDashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {!scanning ? (
-                    <Button onClick={startQRScanner} className="w-full" size="lg">
-                      <QrCode className="w-5 h-5 mr-2" />
-                      Start QR Scanner
-                    </Button>
-                  ) : (
+                  <Button 
+                    onClick={startQRScanner} 
+                    className="w-full" 
+                    size="lg"
+                    disabled={scanning}
+                  >
+                    <QrCode className="w-5 h-5 mr-2" />
+                    {scanning ? "Starting Scanner..." : "Start QR Scanner"}
+                  </Button>
+                  
+                  {scanning && (
                     <div className="space-y-4">
-                      <div id="qr-reader" className="w-full rounded-lg overflow-hidden border-2 border-primary/20"></div>
+                      <div id="qr-reader" className="w-full rounded-lg overflow-hidden border-2 border-primary/20 min-h-[300px]"></div>
                       <Button onClick={stopQRScanner} variant="outline" className="w-full">
                         Cancel Scan
                       </Button>
