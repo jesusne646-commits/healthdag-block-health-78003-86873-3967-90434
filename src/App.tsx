@@ -15,6 +15,7 @@ import Insurance from "./pages/Insurance";
 import Donations from "./pages/Donations";
 import Compliance from "./pages/Compliance";
 import BuyBDAG from "./pages/BuyBDAG";
+import DoctorDashboard from "./pages/DoctorDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/donations" element={<Donations />} />
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/buy-bdag" element={<BuyBDAG />} />
+          <Route path="/doctor" element={<DoctorDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

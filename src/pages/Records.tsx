@@ -4,11 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, FileText, Download, Sparkles, Share2 } from "lucide-react";
+import { ArrowLeft, FileText, Download, Sparkles, Share2, QrCode } from "lucide-react";
 import { ShareRecordsDialog } from "@/components/ShareRecordsDialog";
+import { ShareQRCodeDialog } from "@/components/ShareQRCodeDialog";
 import { SharedAccessLog } from "@/components/SharedAccessLog";
 import { AccessRequestCard } from "@/components/AccessRequestCard";
 import { PendingAccessRequests } from "@/components/PendingAccessRequests";
+import { PendingQRAccessApproval } from "@/components/PendingQRAccessApproval";
 import { useToast } from "@/hooks/use-toast";
 import healthdagLogo from "@/assets/healthdag-logo.png";
 import Footer from "@/components/Footer";
@@ -36,6 +38,8 @@ const Records = () => {
   const [accessGranted, setAccessGranted] = useState(false);
   const [showEncryptionNotice, setShowEncryptionNotice] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showQRDialog, setShowQRDialog] = useState(false);
+  const [userId, setUserId] = useState<string>("");
   const navigate = useNavigate();
   const { toast } = useToast();
   const { requestSignature, isWaitingForSignature } = useSignature();
@@ -50,6 +54,7 @@ const Records = () => {
       navigate("/auth");
       return;
     }
+    setUserId(user.id);
 
     try {
       // Show encryption notice first
@@ -194,7 +199,7 @@ const Records = () => {
                 <p className="text-muted-foreground text-lg">All records are encrypted and stored securely on BlockDAG</p>
               </div>
               {records.length > 0 && (
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   <Button 
                     onClick={() => setShowShareDialog(true)}
                     variant="outline"
@@ -202,6 +207,14 @@ const Records = () => {
                   >
                     <Share2 className="w-4 h-4" />
                     Share Records
+                  </Button>
+                  <Button 
+                    onClick={() => setShowQRDialog(true)}
+                    variant="outline"
+                    className="gap-2 shadow-button hover:shadow-button-hover transition-all duration-300"
+                  >
+                    <QrCode className="w-4 h-4" />
+                    Share via QR
                   </Button>
                   <Button 
                     onClick={handleGetAISummary} 
@@ -216,6 +229,9 @@ const Records = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="lg:col-span-3">
+                <PendingQRAccessApproval />
+              </div>
               <div className="lg:col-span-3">
                 <PendingAccessRequests />
               </div>
@@ -304,6 +320,13 @@ const Records = () => {
             onOpenChange={setShowShareDialog}
             records={records}
             onSuccess={() => {}}
+          />
+
+          <ShareQRCodeDialog
+            open={showQRDialog}
+            onOpenChange={setShowQRDialog}
+            patientId={userId}
+            recordIds={records.map(r => r.id)}
           />
 
           <Dialog open={showSummary} onOpenChange={setShowSummary}>
