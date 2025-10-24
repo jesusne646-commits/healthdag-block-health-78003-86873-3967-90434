@@ -113,46 +113,83 @@ const DoctorDashboard = () => {
         try {
           await html5QrCode.stop();
         } catch (e) {
-          // Ignore cleanup errors
+          console.log("Cleanup previous scanner:", e);
         }
       }
 
       const qrCodeScanner = new Html5Qrcode("qr-reader");
       setHtml5QrCode(qrCodeScanner);
       
-      await qrCodeScanner.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0
-        },
-        (decodedText) => {
-          try {
-            const data = JSON.parse(decodedText);
-            handleQRDataReceived(data);
-            qrCodeScanner.stop().then(() => {
-              setScanning(false);
-              setHtml5QrCode(null);
-            });
-          } catch (error) {
-            console.error("Failed to parse QR code:", error);
-            toast({
-              title: "Invalid QR Code",
-              description: "This QR code is not valid for medical records access",
-              variant: "destructive",
-            });
-          }
-        },
-        (errorMessage) => {
-          // Ignore scan errors - they happen continuously while scanning
+      const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
+      };
+
+      const onScanSuccess = (decodedText: string) => {
+        try {
+          const data = JSON.parse(decodedText);
+          handleQRDataReceived(data);
+          qrCodeScanner.stop().then(() => {
+            setScanning(false);
+            setHtml5QrCode(null);
+          }).catch(err => console.log("Stop error:", err));
+        } catch (error) {
+          console.error("Failed to parse QR code:", error);
+          toast({
+            title: "Invalid QR Code",
+            description: "This QR code is not valid for medical records access",
+            variant: "destructive",
+          });
         }
-      );
+      };
+
+      const onScanFailure = (errorMessage: string) => {
+        // Ignore - this fires continuously while scanning
+      };
+
+      // Try with back camera first, then fallback to any available camera
+      try {
+        console.log("Attempting to start with back camera...");
+        await qrCodeScanner.start(
+          { facingMode: "environment" },
+          config,
+          onScanSuccess,
+          onScanFailure
+        );
+        console.log("Scanner started successfully with back camera");
+      } catch (backCameraError) {
+        console.log("Back camera failed, trying any available camera:", backCameraError);
+        try {
+          // Get list of cameras
+          const devices = await Html5Qrcode.getCameras();
+          console.log("Available cameras:", devices);
+          
+          if (devices && devices.length > 0) {
+            // Try the last camera (usually back camera on mobile)
+            const cameraId = devices[devices.length - 1].id;
+            console.log("Starting with camera:", cameraId);
+            await qrCodeScanner.start(
+              cameraId,
+              config,
+              onScanSuccess,
+              onScanFailure
+            );
+            console.log("Scanner started successfully with camera ID");
+          } else {
+            throw new Error("No cameras found on this device");
+          }
+        } catch (fallbackError) {
+          console.error("Fallback camera also failed:", fallbackError);
+          throw fallbackError;
+        }
+      }
     } catch (error: any) {
       console.error("Failed to start QR scanner:", error);
+      const errorMsg = error?.message || error?.name || "Unknown error";
       toast({
         title: "Camera Error",
-        description: error?.message || "Failed to access camera. Please check permissions.",
+        description: `Cannot access camera: ${errorMsg}. Please ensure camera permissions are granted in your browser settings.`,
         variant: "destructive",
       });
       setScanning(false);
