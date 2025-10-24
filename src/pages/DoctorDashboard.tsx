@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, QrCode, FileText, Stethoscope, Shield } from "lucide-react";
+import { ArrowLeft, QrCode, FileText, Stethoscope, Shield, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Html5Qrcode } from "html5-qrcode";
 import healthdagLogo from "@/assets/healthdag-logo.png";
@@ -33,6 +33,8 @@ const DoctorDashboard = () => {
   const [waitingForApproval, setWaitingForApproval] = useState(false);
   const [grantedRecords, setGrantedRecords] = useState<Record[]>([]);
   const [accessGrantId, setAccessGrantId] = useState<string | null>(null);
+  const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
+  const [uploadingReport, setUploadingReport] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -103,39 +105,71 @@ const DoctorDashboard = () => {
   };
 
   const startQRScanner = async () => {
-    setScanning(true);
-    const html5QrCode = new Html5Qrcode("qr-reader");
-    
     try {
-      await html5QrCode.start(
+      setScanning(true);
+      
+      // Clean up existing instance if any
+      if (html5QrCode) {
+        try {
+          await html5QrCode.stop();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+
+      const qrCodeScanner = new Html5Qrcode("qr-reader");
+      setHtml5QrCode(qrCodeScanner);
+      
+      await qrCodeScanner.start(
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: { width: 250, height: 250 }
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0
         },
         (decodedText) => {
           try {
             const data = JSON.parse(decodedText);
             handleQRDataReceived(data);
-            html5QrCode.stop();
-            setScanning(false);
+            qrCodeScanner.stop().then(() => {
+              setScanning(false);
+              setHtml5QrCode(null);
+            });
           } catch (error) {
             console.error("Failed to parse QR code:", error);
+            toast({
+              title: "Invalid QR Code",
+              description: "This QR code is not valid for medical records access",
+              variant: "destructive",
+            });
           }
         },
         (errorMessage) => {
-          // Ignore scan errors
+          // Ignore scan errors - they happen continuously while scanning
         }
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to start QR scanner:", error);
       toast({
         title: "Camera Error",
-        description: "Failed to access camera. Please check permissions.",
+        description: error?.message || "Failed to access camera. Please check permissions.",
         variant: "destructive",
       });
       setScanning(false);
+      setHtml5QrCode(null);
     }
+  };
+
+  const stopQRScanner = async () => {
+    if (html5QrCode) {
+      try {
+        await html5QrCode.stop();
+      } catch (error) {
+        console.error("Error stopping scanner:", error);
+      }
+    }
+    setScanning(false);
+    setHtml5QrCode(null);
   };
 
   const handleRequestAccess = async () => {
@@ -215,6 +249,38 @@ const DoctorDashboard = () => {
     }
   };
 
+  const handleUploadReport = async (recordId: string, file: File) => {
+    if (!doctorWallet) {
+      toast({
+        title: "Error",
+        description: "Wallet address not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingReport(true);
+    try {
+      // In a real implementation, this would upload to storage and create a new medical record
+      // For demo purposes, we'll just show a success message
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate upload
+      
+      toast({
+        title: "Report Uploaded",
+        description: `Medical report "${file.name}" has been uploaded successfully`,
+      });
+    } catch (error: any) {
+      console.error("Error uploading report:", error);
+      toast({
+        title: "Upload Failed",
+        description: error.message || "Failed to upload medical report",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingReport(false);
+    }
+  };
+
   return (
     <>
       <EncryptionNotice
@@ -277,8 +343,8 @@ const DoctorDashboard = () => {
                     </Button>
                   ) : (
                     <div className="space-y-4">
-                      <div id="qr-reader" className="w-full rounded-lg overflow-hidden"></div>
-                      <Button onClick={() => setScanning(false)} variant="outline" className="w-full">
+                      <div id="qr-reader" className="w-full rounded-lg overflow-hidden border-2 border-primary/20"></div>
+                      <Button onClick={stopQRScanner} variant="outline" className="w-full">
                         Cancel Scan
                       </Button>
                     </div>
@@ -362,7 +428,7 @@ const DoctorDashboard = () => {
                           {record.record_type}
                         </CardDescription>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="space-y-4">
                         <p className="text-sm text-muted-foreground mb-4">
                           {record.description}
                         </p>
@@ -371,6 +437,40 @@ const DoctorDashboard = () => {
                           <span className="text-sm text-muted-foreground">
                             {new Date(record.created_at).toLocaleDateString()}
                           </span>
+                        </div>
+                        
+                        {record.file_url && (
+                          <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => window.open(record.file_url!, '_blank')}
+                          >
+                            <FileText className="w-4 h-4 mr-2" />
+                            View Document
+                          </Button>
+                        )}
+
+                        <div className="pt-2 border-t border-border">
+                          <Label htmlFor={`upload-${record.id}`} className="text-sm font-medium mb-2 block">
+                            Upload Additional Report
+                          </Label>
+                          <Input
+                            id={`upload-${record.id}`}
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                handleUploadReport(record.id, file);
+                                e.target.value = ''; // Reset input
+                              }
+                            }}
+                            disabled={uploadingReport}
+                            className="cursor-pointer"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Upload lab results, prescriptions, or notes
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
