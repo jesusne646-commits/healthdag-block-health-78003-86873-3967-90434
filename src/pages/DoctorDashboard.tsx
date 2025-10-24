@@ -35,6 +35,7 @@ const DoctorDashboard = () => {
   const [accessGrantId, setAccessGrantId] = useState<string | null>(null);
   const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
   const [uploadingReport, setUploadingReport] = useState(false);
+  const [cameraError, setCameraError] = useState<string>("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -105,95 +106,103 @@ const DoctorDashboard = () => {
   };
 
   const startQRScanner = async () => {
-    // Clean up existing instance if any
-    if (html5QrCode) {
-      try {
-        await html5QrCode.stop();
-      } catch (e) {
-        console.log("Cleanup previous scanner:", e);
-      }
-    }
-
-    // Set scanning to true first, so the div gets rendered
+    setCameraError("");
     setScanning(true);
     
-    // Wait for next tick to ensure the div is rendered
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Wait for the DOM to update
+    await new Promise(resolve => setTimeout(resolve, 150));
     
     try {
-      const qrCodeScanner = new Html5Qrcode("qr-reader");
-      setHtml5QrCode(qrCodeScanner);
+      // Clean up existing instance
+      if (html5QrCode) {
+        try {
+          await html5QrCode.stop();
+          await html5QrCode.clear();
+        } catch (e) {
+          console.log("Cleanup:", e);
+        }
+      }
+
+      const scanner = new Html5Qrcode("qr-reader");
+      setHtml5QrCode(scanner);
       
-      const config = {
+      const qrConfig = {
         fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
+        qrbox: 250,
+        aspectRatio: 1.0,
+        disableFlip: false
       };
 
-      const onScanSuccess = (decodedText: string) => {
+      const onSuccess = (decodedText: string) => {
+        console.log("QR Code detected:", decodedText);
         try {
           const data = JSON.parse(decodedText);
-          handleQRDataReceived(data);
-          qrCodeScanner.stop().then(() => {
-            setScanning(false);
-            setHtml5QrCode(null);
-          }).catch(err => console.log("Stop error:", err));
+          if (data.type === "medical_records_access") {
+            handleQRDataReceived(data);
+            scanner.stop().then(() => {
+              setScanning(false);
+              setHtml5QrCode(null);
+            });
+          } else {
+            toast({
+              title: "Invalid QR Code",
+              description: "This is not a medical records QR code",
+              variant: "destructive",
+            });
+          }
         } catch (error) {
-          console.error("Failed to parse QR code:", error);
+          console.error("Parse error:", error);
           toast({
             title: "Invalid QR Code",
-            description: "This QR code is not valid for medical records access",
+            description: "Could not read QR code data",
             variant: "destructive",
           });
         }
       };
 
-      const onScanFailure = (errorMessage: string) => {
-        // Ignore - this fires continuously while scanning
+      const onError = (errorMessage: string) => {
+        // Silently ignore scanning errors
       };
 
-      // Try with back camera first, then fallback to any available camera
       try {
-        console.log("Attempting to start with back camera...");
-        await qrCodeScanner.start(
-          { facingMode: "environment" },
-          config,
-          onScanSuccess,
-          onScanFailure
-        );
-        console.log("Scanner started successfully with back camera");
-      } catch (backCameraError) {
-        console.log("Back camera failed, trying any available camera:", backCameraError);
-        try {
-          // Get list of cameras
-          const devices = await Html5Qrcode.getCameras();
-          console.log("Available cameras:", devices);
+        // Get available cameras
+        const cameras = await Html5Qrcode.getCameras();
+        console.log("Available cameras:", cameras);
+        
+        if (cameras && cameras.length > 0) {
+          // Prefer back camera
+          const backCamera = cameras.find(cam => 
+            cam.label.toLowerCase().includes('back') || 
+            cam.label.toLowerCase().includes('rear') ||
+            cam.label.toLowerCase().includes('environment')
+          );
           
-          if (devices && devices.length > 0) {
-            // Try the last camera (usually back camera on mobile)
-            const cameraId = devices[devices.length - 1].id;
-            console.log("Starting with camera:", cameraId);
-            await qrCodeScanner.start(
-              cameraId,
-              config,
-              onScanSuccess,
-              onScanFailure
-            );
-            console.log("Scanner started successfully with camera ID");
-          } else {
-            throw new Error("No cameras found on this device");
-          }
-        } catch (fallbackError) {
-          console.error("Fallback camera also failed:", fallbackError);
-          throw fallbackError;
+          const cameraId = backCamera ? backCamera.id : cameras[cameras.length - 1].id;
+          console.log("Using camera:", cameraId);
+          
+          await scanner.start(
+            cameraId,
+            qrConfig,
+            onSuccess,
+            onError
+          );
+          
+          console.log("Scanner started successfully");
+        } else {
+          throw new Error("No cameras available on this device");
         }
+      } catch (err: any) {
+        console.error("Camera start error:", err);
+        setCameraError(err.message || "Failed to access camera");
+        throw err;
       }
     } catch (error: any) {
-      console.error("Failed to start QR scanner:", error);
-      const errorMsg = error?.message || error?.name || "Unknown error";
+      console.error("Scanner initialization error:", error);
+      const msg = error?.message || "Camera access failed";
+      setCameraError(msg);
       toast({
         title: "Camera Error",
-        description: `Cannot access camera: ${errorMsg}. Please ensure camera permissions are granted in your browser settings.`,
+        description: msg + ". Please check browser permissions.",
         variant: "destructive",
       });
       setScanning(false);
@@ -205,12 +214,14 @@ const DoctorDashboard = () => {
     if (html5QrCode) {
       try {
         await html5QrCode.stop();
+        await html5QrCode.clear();
       } catch (error) {
         console.error("Error stopping scanner:", error);
       }
     }
     setScanning(false);
     setHtml5QrCode(null);
+    setCameraError("");
   };
 
   const handleRequestAccess = async () => {
@@ -367,7 +378,7 @@ const DoctorDashboard = () => {
               </p>
             </div>
 
-            {!scannedData && !grantedRecords.length && (
+            {!scannedData && !grantedRecords.length && !scanning && (
               <Card className="glass border-2 animate-fade-in-up">
                 <CardHeader className="pb-3 sm:pb-6">
                   <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -383,22 +394,36 @@ const DoctorDashboard = () => {
                     onClick={startQRScanner} 
                     className="w-full h-12 sm:h-14 text-base sm:text-lg" 
                     size="lg"
-                    disabled={scanning}
                   >
                     <QrCode className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                    {scanning ? "Starting..." : "Start Scanner"}
+                    Start QR Scanner
                   </Button>
                   
-                  {scanning && (
-                    <div className="space-y-3 sm:space-y-4">
-                      <div id="qr-reader" className="w-full rounded-lg overflow-hidden border-2 border-primary/20 min-h-[250px] sm:min-h-[300px]"></div>
-                      <Button onClick={stopQRScanner} variant="outline" className="w-full h-11 sm:h-12">
-                        Cancel Scan
-                      </Button>
+                  {cameraError && (
+                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                      <p className="text-sm text-destructive">{cameraError}</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
+            )}
+
+            {/* Fullscreen QR Scanner */}
+            {scanning && (
+              <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+                <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
+                  <h3 className="text-white text-lg font-semibold">Scan QR Code</h3>
+                  <Button onClick={stopQRScanner} variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                    Close
+                  </Button>
+                </div>
+                <div className="flex-1 flex items-center justify-center p-4">
+                  <div id="qr-reader" className="w-full max-w-lg"></div>
+                </div>
+                <div className="p-4 bg-black/80 backdrop-blur-sm text-center">
+                  <p className="text-white/80 text-sm">Position the QR code within the frame</p>
+                </div>
+              </div>
             )}
 
             {scannedData && !requestingSent && (
