@@ -31,7 +31,6 @@ const DoctorDashboard = () => {
   const [doctorName, setDoctorName] = useState("");
   const [requestingSent, setRequestSent] = useState(false);
   const [waitingForApproval, setWaitingForApproval] = useState(false);
-  const [countdown, setCountdown] = useState(20);
   const [grantedRecords, setGrantedRecords] = useState<Record[]>([]);
   const [accessGrantId, setAccessGrantId] = useState<string | null>(null);
   const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
@@ -52,16 +51,6 @@ const DoctorDashboard = () => {
       }
     }
   }, [searchParams]);
-
-  // Countdown effect
-  useEffect(() => {
-    if (waitingForApproval && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [waitingForApproval, countdown]);
 
   // Listen for grant approval in realtime
   useEffect(() => {
@@ -241,7 +230,6 @@ const DoctorDashboard = () => {
 
   const handleRequestAccess = async (qrData: any) => {
     setWaitingForApproval(true);
-    setCountdown(20);
 
     try {
       // Generate automatic doctor wallet and name
@@ -377,7 +365,7 @@ const DoctorDashboard = () => {
     <>
       <EncryptionNotice
         open={waitingForApproval}
-        title={`🔒 Awaiting Patient Approval (${countdown}s)`}
+        title="🔒 Awaiting Patient Approval"
         description="The patient is reviewing your access request. Please wait while they verify and approve the request with their digital signature."
       />
 
@@ -451,12 +439,40 @@ const DoctorDashboard = () => {
                   </div>
 
                   <Button 
-                    onClick={() => {
-                      // Simulate QR scan for demo
+                    onClick={async () => {
+                      // Get current user's data for realistic demo
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (!user) {
+                        toast({
+                          title: "Error",
+                          description: "Please log in to use demo",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+
+                      // Get user's actual medical records
+                      const { data: records } = await (supabase as any)
+                        .from("medical_records")
+                        .select("id")
+                        .eq("user_id", user.id);
+
+                      const recordIds = records && records.length > 0 
+                        ? records.map((r: any) => r.id) 
+                        : [];
+
+                      // Get user's wallet
+                      const { data: profile } = await supabase
+                        .from("profiles")
+                        .select("wallet_address")
+                        .eq("id", user.id)
+                        .single();
+
                       const demoData = {
                         type: "medical_records_access",
-                        patientId: "demo-patient-id",
-                        recordIds: ["demo-record-1", "demo-record-2"],
+                        patientId: user.id,
+                        recordIds: recordIds,
+                        patientWallet: profile?.wallet_address || "",
                         timestamp: Date.now(),
                         expiresIn: 24 * 60 * 60 * 1000,
                       };
@@ -503,7 +519,7 @@ const DoctorDashboard = () => {
                     Awaiting Patient Approval
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">
-                    Auto-approval in {countdown} seconds or approve via Records page
+                    Waiting for patient to approve via their Records dashboard...
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
