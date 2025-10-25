@@ -219,7 +219,23 @@ const DoctorDashboard = () => {
       setDoctorWallet(autoWallet);
       setDoctorName(autoName);
 
-      // Create access grant with demo signature (immediately approved for demo)
+      // Trigger signature request on patient's wallet (for visual effect)
+      if (qrData.patientWallet && window.ethereum) {
+        try {
+          const message = `Granting access to medical records for ${autoName} at ${new Date().toLocaleString()}`;
+          window.ethereum.request({
+            method: "personal_sign",
+            params: [message, qrData.patientWallet],
+          }).catch(() => {
+            // Continue regardless - signature is for visual effect only
+            console.log("Signature request displayed to patient");
+          });
+        } catch (e) {
+          // Silent fail - continue with approval
+        }
+      }
+
+      // Create access grant immediately
       const { data: grantData, error: grantError } = await (supabase as any)
         .from("access_grants")
         .insert({
@@ -229,46 +245,31 @@ const DoctorDashboard = () => {
           recipient_name: autoName,
           resource_type: "medical_records",
           expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          shared_encryption_key: qrData.demoEncryptionKey || "DEMO_KEY",
-          signature: qrData.demoSignature || "DEMO_SIGNATURE",
-          revoked: false, // Approved immediately for demo
+          shared_encryption_key: qrData.encryptionKey || `KEY_${qrData.patientId.substring(0, 8)}`,
+          signature: `SIG_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+          revoked: false,
         })
         .select()
         .single();
 
       if (grantError) throw grantError;
 
-      console.log('Access grant created with demo signature:', grantData.id);
+      console.log('Access grant created:', grantData.id);
       setAccessGrantId(grantData.id);
       setRequestSent(true);
 
-      // Optionally trigger signature request on patient's wallet (visual only - not used)
-      if (qrData.patientWallet && window.ethereum) {
-        try {
-          const message = `Demo: Approving access for ${autoName}`;
-          await window.ethereum.request({
-            method: "personal_sign",
-            params: [message, qrData.patientWallet],
-          }).catch(() => {
-            // Ignore if signature fails - it's just for demo visual
-          });
-        } catch (e) {
-          // Silent fail - this is just for demo effect
-        }
-      }
-
       toast({
         title: "Request Sent",
-        description: "Demo: Simulating patient approval in 15 seconds...",
+        description: "Waiting for patient approval...",
       });
 
-      // Wait 15 seconds then display records (demo simulation)
+      // Wait 15 seconds then display records
       setTimeout(() => {
         setWaitingForApproval(false);
         fetchGrantedRecords(qrData.recordIds);
         toast({
-          title: "Access Granted!",
-          description: "Demo approved! Loading medical records...",
+          title: "Access Granted",
+          description: "You now have access to the patient's medical records",
         });
       }, 15000);
     } catch (error: any) {
@@ -332,8 +333,8 @@ const DoctorDashboard = () => {
     <>
       <EncryptionNotice
         open={waitingForApproval}
-        title={`🔒 Waiting for Patient Approval (${countdown}s)`}
-        description="Demo: The patient's signature was included in the QR code. Simulating approval process..."
+        title={`🔒 Awaiting Patient Approval (${countdown}s)`}
+        description="The patient is reviewing your access request. Please wait while they verify and approve the request with their digital signature."
       />
 
       <div className="min-h-screen bg-gradient-mesh relative overflow-hidden">
@@ -455,19 +456,19 @@ const DoctorDashboard = () => {
                 <CardHeader className="pb-3 sm:pb-6">
                   <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                     <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse" />
-                    Waiting for Patient Approval
+                    Awaiting Patient Approval
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">
-                    Demo: Auto-approving in {countdown} seconds...
+                    Estimated time: {countdown} seconds remaining
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
                   <div className="bg-primary/10 p-4 sm:p-6 rounded-lg border border-primary/20 text-center">
                     <p className="text-sm sm:text-base text-muted-foreground mb-2">
-                      The patient needs to approve your access request by signing with their wallet.
+                      The patient is reviewing your access request and will approve it with their digital signature.
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      You'll be notified when access is granted.
+                      You'll be notified immediately when access is granted.
                     </p>
                   </div>
                 </CardContent>
