@@ -9,7 +9,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <img src={healthdagLogo} alt="HealthDAG" className="w-10 h-10" />
+              <img src={healthdagLogo} alt="HealthDAG" className="w-14 h-14 drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]" />
               <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 HealthDAG
               </h3>

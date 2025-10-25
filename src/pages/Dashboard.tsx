@@ -171,7 +171,7 @@ const Dashboard = () => {
       <header className="glass sticky top-0 z-50 border-b border-primary/10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 animate-fade-in">
-            <img src={healthdagLogo} alt="HealthDAG" className="w-10 h-10 drop-shadow-lg" />
+            <img src={healthdagLogo} alt="HealthDAG" className="w-14 h-14 drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]" />
             <h1 className="text-xl font-bold gradient-text-primary">
               HealthDAG
             </h1>

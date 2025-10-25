@@ -139,7 +139,7 @@ const Auth = () => {
           <img 
             src={healthdagLogo} 
             alt="HealthDAG Logo" 
-            className="w-20 h-20 mx-auto mb-4 drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]"
+            className="w-28 h-28 mx-auto mb-4 drop-shadow-[0_0_30px_rgba(34,211,238,0.5)]"
           />
           <CardTitle className="text-2xl bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
             Welcome to HealthDAG

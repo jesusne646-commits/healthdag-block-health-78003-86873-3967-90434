@@ -165,7 +165,7 @@ const Wallet = () => {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
-            <img src={healthdagLogo} alt="HealthDAG" className="w-8 h-8" />
+            <img src={healthdagLogo} alt="HealthDAG" className="w-12 h-12 drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]" />
             <h1 className="text-xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               My Wallet
             </h1>

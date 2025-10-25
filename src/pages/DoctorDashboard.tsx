@@ -350,7 +350,7 @@ const DoctorDashboard = () => {
                   <ArrowLeft className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Back</span>
                 </Button>
-                <img src={healthdagLogo} alt="HealthDAG" className="w-6 h-6 sm:w-8 sm:h-8 shrink-0" />
+                <img src={healthdagLogo} alt="HealthDAG" className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]" />
                 <h1 className="text-sm sm:text-xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent truncate">
                   Provider Portal
                 </h1>

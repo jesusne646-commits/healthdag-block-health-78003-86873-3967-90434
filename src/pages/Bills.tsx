@@ -246,7 +246,7 @@ const Bills = () => {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
-            <img src={healthdagLogo} alt="HealthDAG" className="w-8 h-8 drop-shadow-lg" />
+            <img src={healthdagLogo} alt="HealthDAG" className="w-12 h-12 drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]" />
             <h1 className="text-xl font-bold gradient-text-primary">
               Medical Bills
             </h1>
