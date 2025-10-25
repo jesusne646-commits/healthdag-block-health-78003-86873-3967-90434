@@ -31,7 +31,6 @@ const DoctorDashboard = () => {
   const [doctorName, setDoctorName] = useState("");
   const [requestingSent, setRequestSent] = useState(false);
   const [waitingForApproval, setWaitingForApproval] = useState(false);
-  const [countdown, setCountdown] = useState(15);
   const [grantedRecords, setGrantedRecords] = useState<Record[]>([]);
   const [accessGrantId, setAccessGrantId] = useState<string | null>(null);
   const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
@@ -53,15 +52,37 @@ const DoctorDashboard = () => {
     }
   }, [searchParams]);
 
-  // Countdown effect for demo
+  // Listen for grant approval in realtime
   useEffect(() => {
-    if (waitingForApproval && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [waitingForApproval, countdown]);
+    if (!accessGrantId) return;
+    
+    const channel = supabase
+      .channel(`grant-${accessGrantId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'access_grants',
+          filter: `id=eq.${accessGrantId}`
+        },
+        (payload: any) => {
+          if (payload.new.revoked === false) {
+            setWaitingForApproval(false);
+            fetchGrantedRecords(payload.new.resource_ids);
+            toast({
+              title: "Access Granted!",
+              description: "Patient approved your request. Loading records...",
+            });
+          }
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [accessGrantId]);
 
   const handleQRDataReceived = async (data: any) => {
     if (data.type === "medical_records_access") {
@@ -209,7 +230,6 @@ const DoctorDashboard = () => {
 
   const handleRequestAccess = async (qrData: any) => {
     setWaitingForApproval(true);
-    setCountdown(15);
 
     try {
       // Generate automatic doctor wallet and name
@@ -246,8 +266,8 @@ const DoctorDashboard = () => {
           resource_type: "medical_records",
           expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           shared_encryption_key: qrData.encryptionKey || `KEY_${qrData.patientId.substring(0, 8)}`,
-          signature: `SIG_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-          revoked: false,
+          signature: "pending_approval",
+          revoked: true,
         })
         .select()
         .single();
@@ -259,19 +279,9 @@ const DoctorDashboard = () => {
       setRequestSent(true);
 
       toast({
-        title: "Request Sent",
-        description: "Waiting for patient approval...",
+        title: "Request Sent!",
+        description: "Waiting for patient to approve in their Records page...",
       });
-
-      // Wait 15 seconds then display records
-      setTimeout(() => {
-        setWaitingForApproval(false);
-        fetchGrantedRecords(qrData.recordIds);
-        toast({
-          title: "Access Granted",
-          description: "You now have access to the patient's medical records",
-        });
-      }, 15000);
     } catch (error: any) {
       console.error("Error requesting access:", error);
       setWaitingForApproval(false);
@@ -333,7 +343,7 @@ const DoctorDashboard = () => {
     <>
       <EncryptionNotice
         open={waitingForApproval}
-        title={`🔒 Awaiting Patient Approval (${countdown}s)`}
+        title="🔒 Awaiting Patient Approval"
         description="The patient is reviewing your access request. Please wait while they verify and approve the request with their digital signature."
       />
 
@@ -459,7 +469,7 @@ const DoctorDashboard = () => {
                     Awaiting Patient Approval
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">
-                    Estimated time: {countdown} seconds remaining
+                    Waiting for patient to approve via their Records dashboard...
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
