@@ -31,6 +31,7 @@ const DoctorDashboard = () => {
   const [doctorName, setDoctorName] = useState("");
   const [requestingSent, setRequestSent] = useState(false);
   const [waitingForApproval, setWaitingForApproval] = useState(false);
+  const [countdown, setCountdown] = useState(15);
   const [grantedRecords, setGrantedRecords] = useState<Record[]>([]);
   const [accessGrantId, setAccessGrantId] = useState<string | null>(null);
   const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
@@ -52,44 +53,15 @@ const DoctorDashboard = () => {
     }
   }, [searchParams]);
 
+  // Countdown effect for demo
   useEffect(() => {
-    if (accessGrantId) {
-      console.log('Setting up realtime subscription for grant:', accessGrantId);
-      
-      // Subscribe to access_grants changes
-      const channel = supabase
-        .channel('access-grant-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'access_grants',
-            filter: `id=eq.${accessGrantId}`
-          },
-          (payload) => {
-            console.log('Access grant updated:', payload);
-            if (payload.new && !payload.new.revoked && payload.new.signature !== 'pending_approval') {
-              console.log('Access granted! Fetching records...');
-              fetchGrantedRecords(payload.new.resource_ids);
-              setWaitingForApproval(false);
-              toast({
-                title: "Access Granted!",
-                description: "Patient approved your access request. Loading records...",
-              });
-            }
-          }
-        )
-        .subscribe((status) => {
-          console.log('Realtime subscription status:', status);
-        });
-
-      return () => {
-        console.log('Cleaning up realtime subscription');
-        supabase.removeChannel(channel);
-      };
+    if (waitingForApproval && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-  }, [accessGrantId]);
+  }, [waitingForApproval, countdown]);
 
   const handleQRDataReceived = async (data: any) => {
     if (data.type === "medical_records_access") {
@@ -237,6 +209,7 @@ const DoctorDashboard = () => {
 
   const handleRequestAccess = async (qrData: any) => {
     setWaitingForApproval(true);
+    setCountdown(15);
 
     try {
       // Generate automatic doctor wallet and name
@@ -246,7 +219,7 @@ const DoctorDashboard = () => {
       setDoctorWallet(autoWallet);
       setDoctorName(autoName);
 
-      // Create access grant (pending approval)
+      // Create access grant with demo signature (immediately approved for demo)
       const { data: grantData, error: grantError } = await (supabase as any)
         .from("access_grants")
         .insert({
@@ -256,36 +229,48 @@ const DoctorDashboard = () => {
           recipient_name: autoName,
           resource_type: "medical_records",
           expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          shared_encryption_key: "pending_approval",
-          signature: "pending_approval",
-          revoked: true, // Start as revoked, patient will approve
+          shared_encryption_key: qrData.demoEncryptionKey || "DEMO_KEY",
+          signature: qrData.demoSignature || "DEMO_SIGNATURE",
+          revoked: false, // Approved immediately for demo
         })
         .select()
         .single();
 
       if (grantError) throw grantError;
 
-      console.log('Access grant created:', grantData.id);
+      console.log('Access grant created with demo signature:', grantData.id);
       setAccessGrantId(grantData.id);
       setRequestSent(true);
 
-      // Create access request for patient notification
-      await (supabase as any)
-        .from("access_requests")
-        .insert({
-          patient_id: qrData.patientId,
-          requester_wallet_address: autoWallet,
-          requester_name: autoName,
-          resource_type: "medical_records",
-          reason: "QR Code scan - Access request from healthcare provider",
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          status: "pending",
-        });
+      // Optionally trigger signature request on patient's wallet (visual only - not used)
+      if (qrData.patientWallet && window.ethereum) {
+        try {
+          const message = `Demo: Approving access for ${autoName}`;
+          await window.ethereum.request({
+            method: "personal_sign",
+            params: [message, qrData.patientWallet],
+          }).catch(() => {
+            // Ignore if signature fails - it's just for demo visual
+          });
+        } catch (e) {
+          // Silent fail - this is just for demo effect
+        }
+      }
 
       toast({
         title: "Request Sent",
-        description: "Waiting for patient approval via wallet signature...",
+        description: "Demo: Simulating patient approval in 15 seconds...",
       });
+
+      // Wait 15 seconds then display records (demo simulation)
+      setTimeout(() => {
+        setWaitingForApproval(false);
+        fetchGrantedRecords(qrData.recordIds);
+        toast({
+          title: "Access Granted!",
+          description: "Demo approved! Loading medical records...",
+        });
+      }, 15000);
     } catch (error: any) {
       console.error("Error requesting access:", error);
       setWaitingForApproval(false);
@@ -347,8 +332,8 @@ const DoctorDashboard = () => {
     <>
       <EncryptionNotice
         open={waitingForApproval}
-        title="🔒 Waiting for Patient Approval"
-        description="The patient's medical records are encrypted. Please wait while the patient confirms your access request through their wallet signature."
+        title={`🔒 Waiting for Patient Approval (${countdown}s)`}
+        description="Demo: The patient's signature was included in the QR code. Simulating approval process..."
       />
 
       <div className="min-h-screen bg-gradient-mesh relative overflow-hidden">
@@ -473,7 +458,7 @@ const DoctorDashboard = () => {
                     Waiting for Patient Approval
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">
-                    Access request sent successfully
+                    Demo: Auto-approving in {countdown} seconds...
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">

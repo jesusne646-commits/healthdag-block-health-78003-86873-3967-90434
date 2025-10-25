@@ -40,6 +40,7 @@ const Records = () => {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [userId, setUserId] = useState<string>("");
+  const [userWallet, setUserWallet] = useState<string>("");
   const navigate = useNavigate();
   const { toast } = useToast();
   const { requestSignature, isWaitingForSignature } = useSignature();
@@ -96,6 +97,17 @@ const Records = () => {
     if (!user) {
       navigate("/auth");
       return;
+    }
+
+    // Fetch user profile to get wallet
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("wallet_address")
+      .eq("id", user.id)
+      .single();
+    
+    if (profile?.wallet_address) {
+      setUserWallet(profile.wallet_address);
     }
 
     const { data, error } = await (supabase as any)
@@ -327,6 +339,7 @@ const Records = () => {
             onOpenChange={setShowQRDialog}
             patientId={userId}
             recordIds={records.map(r => r.id)}
+            patientWallet={userWallet}
           />
 
           <Dialog open={showSummary} onOpenChange={setShowSummary}>
