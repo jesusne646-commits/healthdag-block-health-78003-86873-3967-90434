@@ -38,7 +38,7 @@ export const ShareQRCodeDialog = ({ open, onOpenChange, patientId, recordIds }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-xl">Share via QR Code</DialogTitle>
           <DialogDescription>
@@ -46,10 +46,10 @@ export const ShareQRCodeDialog = ({ open, onOpenChange, patientId, recordIds }: 
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center gap-6 py-6">
-          <div className="p-4 bg-white rounded-xl shadow-lg">
+          <div className="p-6 bg-white rounded-xl shadow-lg">
             <QRCodeSVG
               value={qrData}
-              size={256}
+              size={384}
               level="H"
               includeMargin={true}
             />

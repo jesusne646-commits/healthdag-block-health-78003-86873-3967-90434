@@ -54,6 +54,8 @@ const DoctorDashboard = () => {
 
   useEffect(() => {
     if (accessGrantId) {
+      console.log('Setting up realtime subscription for grant:', accessGrantId);
+      
       // Subscribe to access_grants changes
       const channel = supabase
         .channel('access-grant-changes')
@@ -67,19 +69,23 @@ const DoctorDashboard = () => {
           },
           (payload) => {
             console.log('Access grant updated:', payload);
-            if (payload.new && !payload.new.revoked) {
+            if (payload.new && !payload.new.revoked && payload.new.signature !== 'pending_approval') {
+              console.log('Access granted! Fetching records...');
               fetchGrantedRecords(payload.new.resource_ids);
               setWaitingForApproval(false);
               toast({
                 title: "Access Granted!",
-                description: "Patient approved your access request",
+                description: "Patient approved your access request. Loading records...",
               });
             }
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log('Realtime subscription status:', status);
+        });
 
       return () => {
+        console.log('Cleaning up realtime subscription');
         supabase.removeChannel(channel);
       };
     }
