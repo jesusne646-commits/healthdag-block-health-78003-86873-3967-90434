@@ -398,6 +398,35 @@ const DoctorDashboard = () => {
                     <QrCode className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                     Start QR Scanner
                   </Button>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-border" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or for demo
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={() => {
+                      // Simulate QR scan for demo
+                      const demoData = {
+                        type: "medical_records_access",
+                        patientId: "demo-patient-id",
+                        recordIds: ["demo-record-1", "demo-record-2"],
+                        timestamp: Date.now(),
+                        expiresIn: 24 * 60 * 60 * 1000,
+                      };
+                      handleQRDataReceived(demoData);
+                    }}
+                    variant="outline"
+                    className="w-full h-11 sm:h-12"
+                  >
+                    Use Demo QR Data
+                  </Button>
                   
                   {cameraError && (
                     <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
