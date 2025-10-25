@@ -91,7 +91,7 @@ const DoctorDashboard = () => {
     }
   }, [accessGrantId]);
 
-  const handleQRDataReceived = (data: any) => {
+  const handleQRDataReceived = async (data: any) => {
     if (data.type === "medical_records_access") {
       // Check if QR code is expired
       const expirationTime = data.timestamp + data.expiresIn;
@@ -103,11 +103,16 @@ const DoctorDashboard = () => {
         });
         return;
       }
+      
       setScannedData(data);
+      
       toast({
         title: "QR Code Scanned",
-        description: "Please enter your details to request access",
+        description: "Sending access request to patient...",
       });
+      
+      // Automatically request access
+      await handleRequestAccess(data);
     }
   };
 
@@ -230,27 +235,25 @@ const DoctorDashboard = () => {
     setCameraError("");
   };
 
-  const handleRequestAccess = async () => {
-    if (!doctorWallet || !scannedData) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter your wallet address",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleRequestAccess = async (qrData: any) => {
     setWaitingForApproval(true);
 
     try {
+      // Generate automatic doctor wallet and name
+      const autoWallet = `DOCTOR_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      const autoName = `Healthcare Provider - ${new Date().toLocaleTimeString()}`;
+      
+      setDoctorWallet(autoWallet);
+      setDoctorName(autoName);
+
       // Create access grant (pending approval)
       const { data: grantData, error: grantError } = await (supabase as any)
         .from("access_grants")
         .insert({
-          patient_id: scannedData.patientId,
-          resource_ids: scannedData.recordIds,
-          recipient_wallet_address: doctorWallet,
-          recipient_name: doctorName || "Healthcare Provider",
+          patient_id: qrData.patientId,
+          resource_ids: qrData.recordIds,
+          recipient_wallet_address: autoWallet,
+          recipient_name: autoName,
           resource_type: "medical_records",
           expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           shared_encryption_key: "pending_approval",
@@ -262,6 +265,7 @@ const DoctorDashboard = () => {
 
       if (grantError) throw grantError;
 
+      console.log('Access grant created:', grantData.id);
       setAccessGrantId(grantData.id);
       setRequestSent(true);
 
@@ -269,9 +273,9 @@ const DoctorDashboard = () => {
       await (supabase as any)
         .from("access_requests")
         .insert({
-          patient_id: scannedData.patientId,
-          requester_wallet_address: doctorWallet,
-          requester_name: doctorName || "Healthcare Provider",
+          patient_id: qrData.patientId,
+          requester_wallet_address: autoWallet,
+          requester_name: autoName,
           resource_type: "medical_records",
           reason: "QR Code scan - Access request from healthcare provider",
           expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -280,7 +284,7 @@ const DoctorDashboard = () => {
 
       toast({
         title: "Request Sent",
-        description: "Waiting for patient approval...",
+        description: "Waiting for patient approval via wallet signature...",
       });
     } catch (error: any) {
       console.error("Error requesting access:", error);
@@ -461,52 +465,26 @@ const DoctorDashboard = () => {
               </div>
             )}
 
-            {scannedData && !requestingSent && (
+            {waitingForApproval && (
               <Card className="glass border-2 animate-fade-in-up">
                 <CardHeader className="pb-3 sm:pb-6">
                   <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                    <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                    Request Access
+                    <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse" />
+                    Waiting for Patient Approval
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">
-                    Enter your details to request access
+                    Access request sent successfully
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="doctorWallet" className="text-sm sm:text-base">Your Wallet Address *</Label>
-                    <Input
-                      id="doctorWallet"
-                      placeholder="0x..."
-                      value={doctorWallet}
-                      onChange={(e) => setDoctorWallet(e.target.value)}
-                      className="h-11 sm:h-12 text-base"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="doctorName" className="text-sm sm:text-base">Your Name (Optional)</Label>
-                    <Input
-                      id="doctorName"
-                      placeholder="Dr. John Smith"
-                      value={doctorName}
-                      onChange={(e) => setDoctorName(e.target.value)}
-                      className="h-11 sm:h-12 text-base"
-                    />
-                  </div>
-                  <div className="bg-primary/10 p-3 sm:p-4 rounded-lg border border-primary/20">
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      <strong>Note:</strong> Patient must approve your request via wallet signature 
-                      to ensure their records remain secure and encrypted.
+                  <div className="bg-primary/10 p-4 sm:p-6 rounded-lg border border-primary/20 text-center">
+                    <p className="text-sm sm:text-base text-muted-foreground mb-2">
+                      The patient needs to approve your access request by signing with their wallet.
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      You'll be notified when access is granted.
                     </p>
                   </div>
-                  <Button 
-                    onClick={handleRequestAccess} 
-                    className="w-full h-12 sm:h-14 text-base sm:text-lg" 
-                    size="lg"
-                    disabled={!doctorWallet}
-                  >
-                    Send Access Request
-                  </Button>
                 </CardContent>
               </Card>
             )}
