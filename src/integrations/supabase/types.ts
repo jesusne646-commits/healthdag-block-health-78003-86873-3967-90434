@@ -725,7 +725,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_active_grant_for_records: {
+        Args: { _record_ids: string[]; _requester_wallet: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
