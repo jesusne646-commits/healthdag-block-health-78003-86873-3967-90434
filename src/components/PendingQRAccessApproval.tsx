@@ -28,7 +28,7 @@ export const PendingQRAccessApproval = () => {
   useEffect(() => {
     fetchPendingGrants();
     
-    // Subscribe to new grants
+    // Subscribe to new grants and updates
     const channel = supabase
       .channel('pending-grants')
       .on(
@@ -38,7 +38,21 @@ export const PendingQRAccessApproval = () => {
           schema: 'public',
           table: 'access_grants',
         },
-        () => {
+        (payload) => {
+          console.log('New grant detected:', payload);
+          // Add slight delay to ensure data is written
+          setTimeout(() => fetchPendingGrants(), 100);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'access_grants',
+        },
+        (payload) => {
+          console.log('Grant updated:', payload);
           fetchPendingGrants();
         }
       )

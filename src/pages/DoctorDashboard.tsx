@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,8 @@ const DoctorDashboard = () => {
   const [cameraError, setCameraError] = useState<string>("");
   const navigate = useNavigate();
   const { toast } = useToast();
+  const waitingRef = useRef(false);
+  const grantIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     // Check if there's QR data in URL params (for manual testing)
@@ -67,7 +69,10 @@ const DoctorDashboard = () => {
           filter: `id=eq.${accessGrantId}`
         },
         (payload: any) => {
+          console.log('Grant update received:', payload);
           if (payload.new.revoked === false) {
+            console.log('Patient approved the grant');
+            waitingRef.current = false;
             setWaitingForApproval(false);
             fetchGrantedRecords(payload.new.resource_ids);
             toast({
@@ -230,6 +235,7 @@ const DoctorDashboard = () => {
 
   const handleRequestAccess = async (qrData: any) => {
     setWaitingForApproval(true);
+    waitingRef.current = true;
 
     try {
       // Generate automatic doctor wallet and name
@@ -276,6 +282,7 @@ const DoctorDashboard = () => {
 
       console.log('Access grant created:', grantData.id);
       setAccessGrantId(grantData.id);
+      grantIdRef.current = grantData.id;
       setRequestSent(true);
 
       toast({
@@ -285,16 +292,20 @@ const DoctorDashboard = () => {
 
       // Auto-approve after 20 seconds if patient doesn't respond
       setTimeout(async () => {
-        if (waitingForApproval) {
+        console.log('Auto-approve timeout triggered, waitingRef.current:', waitingRef.current);
+        if (waitingRef.current && grantIdRef.current) {
+          console.log('Auto-approving grant:', grantIdRef.current);
           const { error: updateError } = await supabase
             .from("access_grants")
             .update({
               signature: `SIG_${Date.now()}_${Math.random().toString(36).substring(7)}`,
               revoked: false,
             })
-            .eq("id", grantData.id);
+            .eq("id", grantIdRef.current);
 
           if (!updateError) {
+            console.log('Auto-approval successful');
+            waitingRef.current = false;
             setWaitingForApproval(false);
             fetchGrantedRecords(qrData.recordIds);
             toast({
