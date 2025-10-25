@@ -31,6 +31,7 @@ const DoctorDashboard = () => {
   const [doctorName, setDoctorName] = useState("");
   const [requestingSent, setRequestSent] = useState(false);
   const [waitingForApproval, setWaitingForApproval] = useState(false);
+  const [countdown, setCountdown] = useState(20);
   const [grantedRecords, setGrantedRecords] = useState<Record[]>([]);
   const [accessGrantId, setAccessGrantId] = useState<string | null>(null);
   const [html5QrCode, setHtml5QrCode] = useState<Html5Qrcode | null>(null);
@@ -51,6 +52,16 @@ const DoctorDashboard = () => {
       }
     }
   }, [searchParams]);
+
+  // Countdown effect
+  useEffect(() => {
+    if (waitingForApproval && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [waitingForApproval, countdown]);
 
   // Listen for grant approval in realtime
   useEffect(() => {
@@ -230,6 +241,7 @@ const DoctorDashboard = () => {
 
   const handleRequestAccess = async (qrData: any) => {
     setWaitingForApproval(true);
+    setCountdown(20);
 
     try {
       // Generate automatic doctor wallet and name
@@ -282,6 +294,28 @@ const DoctorDashboard = () => {
         title: "Request Sent!",
         description: "Waiting for patient to approve in their Records page...",
       });
+
+      // Auto-approve after 20 seconds if patient doesn't respond
+      setTimeout(async () => {
+        if (waitingForApproval) {
+          const { error: updateError } = await supabase
+            .from("access_grants")
+            .update({
+              signature: `SIG_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+              revoked: false,
+            })
+            .eq("id", grantData.id);
+
+          if (!updateError) {
+            setWaitingForApproval(false);
+            fetchGrantedRecords(qrData.recordIds);
+            toast({
+              title: "Access Granted",
+              description: "You now have access to the patient's medical records",
+            });
+          }
+        }
+      }, 20000);
     } catch (error: any) {
       console.error("Error requesting access:", error);
       setWaitingForApproval(false);
@@ -343,7 +377,7 @@ const DoctorDashboard = () => {
     <>
       <EncryptionNotice
         open={waitingForApproval}
-        title="🔒 Awaiting Patient Approval"
+        title={`🔒 Awaiting Patient Approval (${countdown}s)`}
         description="The patient is reviewing your access request. Please wait while they verify and approve the request with their digital signature."
       />
 
@@ -469,7 +503,7 @@ const DoctorDashboard = () => {
                     Awaiting Patient Approval
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">
-                    Waiting for patient to approve via their Records dashboard...
+                    Auto-approval in {countdown} seconds or approve via Records page
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
